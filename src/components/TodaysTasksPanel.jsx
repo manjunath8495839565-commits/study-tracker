@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Bell, MessageSquare, Smartphone, Send, Sparkles, AlertTriangle } from "lucide-react";
+import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Bell, Smartphone, Sparkles } from "lucide-react";
 import { getTodaysTasksList } from "../utils/timelineMath";
 import {
   getNotificationPermission,
   requestNotificationPermission,
   sendTaskNotification,
-  generateSmsDraftUrl,
-  generateStreakBrokenSmsUrl,
   isNotificationSupported
 } from "../utils/notifications";
 
@@ -31,9 +29,6 @@ export const TodaysTasksPanel = ({
   const todaysTasks = getTodaysTasksList(syllabus, customTasks);
   const incompleteTasks = todaysTasks.filter(t => !t.completed);
   const completedToday = todaysTasks.filter(t => t.completed).length;
-
-  const smsUrl = generateSmsDraftUrl(incompleteTasks);
-  const streakBrokenSmsUrl = generateStreakBrokenSmsUrl(0);
 
   const handleEnableNotifications = async () => {
     const permission = await requestNotificationPermission();
@@ -96,7 +91,7 @@ export const TodaysTasksPanel = ({
         {/* Task Box Container */}
         <div className="bg-white border border-brown-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
           
-          {/* 5:00 PM SMS & MOBILE NOTIFICATION REMINDER BAR */}
+          {/* 5:00 PM AUTOMATIC MOBILE NOTIFICATION BAR */}
           <div className="bg-gradient-to-r from-brown-900 via-espresso-900 to-brown-950 text-amber-100 rounded-xl p-3.5 sm:p-4 shadow-sm border border-brown-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-500/20 border border-amber-400/30 rounded-lg text-amber-300 shrink-0">
@@ -104,36 +99,18 @@ export const TodaysTasksPanel = ({
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-extrabold text-sm text-amber-200">5:00 PM Daily Task Reminder & SMS Alert</h4>
+                  <h4 className="font-extrabold text-sm text-amber-200">5:00 PM Automatic Daily Mobile Notification</h4>
                   <span className="bg-amber-400/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-400/30">
-                    AUTOMATIC EVENING 5 PM
+                    AUTOMATIC 5 PM PUSH
                   </span>
                 </div>
                 <p className="text-xs text-amber-100/80 font-medium mt-0.5">
-                  Get daily mobile notifications & SMS text updates for today's incomplete priority tasks at 5:00 PM.
+                  Automatic lock-screen alerts for incomplete priority focus tasks every evening at 5:00 PM.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
-              <a
-                href={smsUrl}
-                className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-2xs"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-amber-300" />
-                <span>📲 Send SMS Reminder</span>
-              </a>
-
-              <a
-                href={streakBrokenSmsUrl}
-                className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-2xs"
-                title="Send a Streak Broken Warning SMS"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 text-rose-300" />
-                <span>⚠️ Streak Broken SMS</span>
-              </a>
-
-              {/* Mobile Notification Enable / Status */}
               {notifPermission === "granted" ? (
                 <button
                   onClick={handleTestNotification}
