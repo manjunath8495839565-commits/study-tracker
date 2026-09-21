@@ -16,7 +16,7 @@ An interactive, full-featured web and mobile Progressive Web Application (PWA) e
 ### 📱 1. Mobile App (PWA) — No App Store Needed!
 - **Standalone Mobile Experience:** Install directly on Android or iPhone home screens without Google Play Store or Apple App Store.
 - **Offline Capable:** Powered by Service Workers (`sw.js`) for instant loading even without internet.
-- **Auto-Hide Install Buttons:** Smart standalone detection (`display-mode: standalone`) hides install prompts when running inside the installed app.
+
 
 ### 🔔 2. 5:00 PM Daily Push Notifications & SMS Alerts
 - **Automatic Evening Notification:** Sends native mobile lock-screen alerts at 5:00 PM summarizing today's incomplete priority focus tasks.
