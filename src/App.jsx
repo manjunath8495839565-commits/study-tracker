@@ -16,7 +16,7 @@ import { getStoredState, saveStateToLocalStorage, resetStoredState, getDefaultSt
 import { computeOverallStats, getWeakTopicsList, getTodaysTasksList } from "./utils/timelineMath";
 import { exportToCSV } from "./utils/csvExport";
 import { syncToGoogleSheets } from "./utils/googleSheetsSync";
-import { checkAndTrigger5pmReminder } from "./utils/notifications";
+import { checkAndTrigger5pmReminder, checkAndTriggerStreakBrokenAlert } from "./utils/notifications";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState("WELCOME");
@@ -62,11 +62,13 @@ export default function App() {
 
   useEffect(() => {
     checkAndTrigger5pmReminder(todaysTasks);
+    checkAndTriggerStreakBrokenAlert(appState.streakData);
     const interval = setInterval(() => {
       checkAndTrigger5pmReminder(todaysTasks);
+      checkAndTriggerStreakBrokenAlert(appState.streakData);
     }, 60000);
     return () => clearInterval(interval);
-  }, [todaysTasks]);
+  }, [todaysTasks, appState.streakData]);
 
   useEffect(() => {
     saveStateToLocalStorage(appState);

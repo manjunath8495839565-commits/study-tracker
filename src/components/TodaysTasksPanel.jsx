@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Bell, MessageSquare, Smartphone, Send, Sparkles } from "lucide-react";
+import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Bell, MessageSquare, Smartphone, Send, Sparkles, AlertTriangle } from "lucide-react";
 import { getTodaysTasksList } from "../utils/timelineMath";
 import {
   getNotificationPermission,
   requestNotificationPermission,
   sendTaskNotification,
   generateSmsDraftUrl,
+  generateStreakBrokenSmsUrl,
   isNotificationSupported
 } from "../utils/notifications";
 
@@ -31,6 +32,9 @@ export const TodaysTasksPanel = ({
   const incompleteTasks = todaysTasks.filter(t => !t.completed);
   const completedToday = todaysTasks.filter(t => t.completed).length;
 
+  const smsUrl = generateSmsDraftUrl(incompleteTasks);
+  const streakBrokenSmsUrl = generateStreakBrokenSmsUrl(0);
+
   const handleEnableNotifications = async () => {
     const permission = await requestNotificationPermission();
     setNotifPermission(permission);
@@ -44,8 +48,6 @@ export const TodaysTasksPanel = ({
     setTestSent(true);
     setTimeout(() => setTestSent(false), 3000);
   };
-
-  const smsUrl = generateSmsDraftUrl(incompleteTasks);
 
   const handleAddCustom = (e) => {
     e.preventDefault();
@@ -114,13 +116,21 @@ export const TodaysTasksPanel = ({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
-              {/* SMS Button */}
               <a
                 href={smsUrl}
                 className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-2xs"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-amber-300" />
                 <span>📲 Send SMS Reminder</span>
+              </a>
+
+              <a
+                href={streakBrokenSmsUrl}
+                className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-2xs"
+                title="Send a Streak Broken Warning SMS"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-300" />
+                <span>⚠️ Streak Broken SMS</span>
               </a>
 
               {/* Mobile Notification Enable / Status */}

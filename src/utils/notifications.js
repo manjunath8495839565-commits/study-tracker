@@ -90,3 +90,58 @@ export const checkAndTrigger5pmReminder = (todaysTasks) => {
     localStorage.setItem("gate_last_5pm_notified", dateKey);
   }
 };
+
+export const sendStreakBrokenNotification = (previousStreak = 0) => {
+  if (!isNotificationSupported() || Notification.permission !== "granted") return;
+
+  const title = `⚠️ GATE 2028: Daily Study Streak Broken!`;
+  const body = `Your previous ${previousStreak > 0 ? `${previousStreak}-day ` : ""}streak was broken due to inactivity yesterday.\n\nDon't give up! Complete today's priority tasks to restart your streak now!`;
+
+  if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.showNotification(title, {
+        body,
+        icon: "./pwa-192.png",
+        badge: "./pwa-192.png",
+        vibrate: [300, 100, 300],
+        tag: "gate-streak-broken-alert",
+        renotify: true,
+        data: { url: "./" }
+      });
+    });
+  } else {
+    try {
+      new Notification(title, { body, icon: "./pwa-192.png" });
+    } catch (e) {
+      console.warn("Notification error:", e);
+    }
+  }
+};
+
+export const generateStreakBrokenSmsUrl = (previousStreak = 0) => {
+  const message = encodeURIComponent(
+    `⚠️ GATE 2028 ALERT: Your daily study streak (${previousStreak > 0 ? `${previousStreak} days` : "active"}) was broken!\n\nDon't lose momentum. Complete today's focus tasks now to rebuild your preparation streak!`
+  );
+  return `sms:?body=${message}`;
+};
+
+export const checkAndTriggerStreakBrokenAlert = (streakData) => {
+  if (!streakData || !streakData.lastActiveDate) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastActive = new Date(streakData.lastActiveDate);
+  lastActive.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.floor((today - lastActive) / (1000 * 3600 * 24));
+  const dateKey = today.toISOString().split("T")[0];
+  const lastBrokenNotified = localStorage.getItem("gate_last_streak_broken_notified");
+
+  if (diffDays > 1 && lastBrokenNotified !== dateKey) {
+    sendStreakBrokenNotification(streakData.currentStreak || 0);
+    localStorage.setItem("gate_last_streak_broken_notified", dateKey);
+    return true;
+  }
+  return false;
+};

@@ -1,12 +1,14 @@
 import React from "react";
-import { AlertOctagon, Flame, Target, Award, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { AlertOctagon, Flame, Target, Award, ArrowUpRight, CheckCircle2, MessageSquare, Smartphone, AlertTriangle } from "lucide-react";
 import { getWeakTopicsList } from "../utils/timelineMath";
+import { generateStreakBrokenSmsUrl, sendStreakBrokenNotification } from "../utils/notifications";
 
 export const WeakTopicAnalytics = ({
   syllabus,
   streakData
 }) => {
   const weakTopics = getWeakTopicsList(syllabus);
+  const streakBrokenUrl = generateStreakBrokenSmsUrl(streakData?.currentStreak || 0);
 
   const subjectAccuracyList = syllabus.map(subject => {
     let sumAccuracy = 0;
@@ -45,19 +47,30 @@ export const WeakTopicAnalytics = ({
             </p>
           </div>
 
-          {/* Daily Streak Card */}
-          <div className="flex items-center gap-3 bg-brown-50 border border-brown-300 px-4 py-2.5 rounded-2xl shadow-xs self-start md:self-auto">
-            <div className="p-2 bg-amber-100 rounded-xl border border-amber-300">
-              <Flame className="w-6 h-6 text-amber-700 animate-bounce" />
-            </div>
-            <div>
-              <div className="text-[11px] font-bold text-brown-700 uppercase tracking-wider">
-                Current Study Streak
+          {/* Daily Streak Card with Broken Streak SMS Alert Button */}
+          <div className="flex items-center gap-3 bg-brown-50 border border-brown-300 p-3 rounded-2xl shadow-xs self-start md:self-auto flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-xl border border-amber-300">
+                <Flame className="w-6 h-6 text-amber-700 animate-bounce" />
               </div>
-              <div className="text-lg font-black text-brown-950 flex items-center gap-1">
-                {streakData?.currentStreak || 1} <span className="text-xs font-semibold text-brown-700">Days Active 🔥</span>
+              <div>
+                <div className="text-[11px] font-bold text-brown-700 uppercase tracking-wider">
+                  Current Study Streak
+                </div>
+                <div className="text-lg font-black text-brown-950 flex items-center gap-1">
+                  {streakData?.currentStreak || 1} <span className="text-xs font-semibold text-brown-700">Days Active 🔥</span>
+                </div>
               </div>
             </div>
+
+            <a
+              href={streakBrokenUrl}
+              className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-950 border border-rose-300 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95"
+              title="Send an SMS alert if streak is broken"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-700" />
+              <span>📲 Streak Broken SMS Alert</span>
+            </a>
           </div>
         </div>
 
