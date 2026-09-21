@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
+import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Bell, MessageSquare, Smartphone, Send, Sparkles } from "lucide-react";
 import { getTodaysTasksList } from "../utils/timelineMath";
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendTaskNotification,
+  generateSmsDraftUrl,
+  isNotificationSupported
+} from "../utils/notifications";
 
 export const TodaysTasksPanel = ({
   syllabus,
@@ -12,6 +19,8 @@ export const TodaysTasksPanel = ({
 }) => {
   const [newCustomTaskLabel, setNewCustomTaskLabel] = useState("");
   const [now, setNow] = useState(() => new Date());
+  const [notifPermission, setNotifPermission] = useState(() => getNotificationPermission());
+  const [testSent, setTestSent] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -19,7 +28,24 @@ export const TodaysTasksPanel = ({
   }, []);
 
   const todaysTasks = getTodaysTasksList(syllabus, customTasks);
+  const incompleteTasks = todaysTasks.filter(t => !t.completed);
   const completedToday = todaysTasks.filter(t => t.completed).length;
+
+  const handleEnableNotifications = async () => {
+    const permission = await requestNotificationPermission();
+    setNotifPermission(permission);
+    if (permission === "granted") {
+      sendTaskNotification(incompleteTasks.length > 0 ? incompleteTasks : [{ text: "All GATE 2028 tasks completed today!" }]);
+    }
+  };
+
+  const handleTestNotification = () => {
+    sendTaskNotification(incompleteTasks.length > 0 ? incompleteTasks : [{ text: "Example: Operating Systems (Process Synchronization)" }]);
+    setTestSent(true);
+    setTimeout(() => setTestSent(false), 3000);
+  };
+
+  const smsUrl = generateSmsDraftUrl(incompleteTasks);
 
   const handleAddCustom = (e) => {
     e.preventDefault();
@@ -67,6 +93,56 @@ export const TodaysTasksPanel = ({
 
         {/* Task Box Container */}
         <div className="bg-white border border-brown-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+          
+          {/* 5:00 PM SMS & MOBILE NOTIFICATION REMINDER BAR */}
+          <div className="bg-gradient-to-r from-brown-900 via-espresso-900 to-brown-950 text-amber-100 rounded-xl p-3.5 sm:p-4 shadow-sm border border-brown-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-500/20 border border-amber-400/30 rounded-lg text-amber-300 shrink-0">
+                <Bell className="w-5 h-5 animate-bounce" style={{ animationDuration: '3s' }} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-extrabold text-sm text-amber-200">5:00 PM Daily Task Reminder & SMS Alert</h4>
+                  <span className="bg-amber-400/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-400/30">
+                    AUTOMATIC EVENING 5 PM
+                  </span>
+                </div>
+                <p className="text-xs text-amber-100/80 font-medium mt-0.5">
+                  Get daily mobile notifications & SMS text updates for today's incomplete priority tasks at 5:00 PM.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
+              {/* SMS Button */}
+              <a
+                href={smsUrl}
+                className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-2xs"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-amber-300" />
+                <span>📲 Send SMS Reminder</span>
+              </a>
+
+              {/* Mobile Notification Enable / Status */}
+              {notifPermission === "granted" ? (
+                <button
+                  onClick={handleTestNotification}
+                  className="px-3 py-1.5 bg-emerald-900/60 hover:bg-emerald-900/80 text-emerald-200 border border-emerald-500/40 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>{testSent ? "Notification Sent!" : "5 PM Active (Test Now)"}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleEnableNotifications}
+                  className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-brown-950 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
+                >
+                  <Bell className="w-3.5 h-3.5 text-brown-950" />
+                  <span>🔔 Enable 5 PM Notification</span>
+                </button>
+              )}
+            </div>
+          </div>
           
           {/* Quick Add Custom Focus Task Form */}
           <form onSubmit={handleAddCustom} className="flex gap-2">

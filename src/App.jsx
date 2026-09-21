@@ -16,6 +16,7 @@ import { getStoredState, saveStateToLocalStorage, resetStoredState, getDefaultSt
 import { computeOverallStats, getWeakTopicsList, getTodaysTasksList } from "./utils/timelineMath";
 import { exportToCSV } from "./utils/csvExport";
 import { syncToGoogleSheets } from "./utils/googleSheetsSync";
+import { checkAndTrigger5pmReminder } from "./utils/notifications";
 
 export default function App() {
   // Navigation Screen State: "WELCOME" vs "DASHBOARD"
@@ -59,6 +60,21 @@ export default function App() {
 
   const handleOpenInstallModal = isStandalone ? null : () => setIsInstallModalOpen(true);
 
+  // Overall statistics computed live
+  const stats = computeOverallStats(appState.syllabus);
+  const weakTopics = getWeakTopicsList(appState.syllabus);
+  const todaysTasks = getTodaysTasksList(appState.syllabus, appState.customTasks || []);
+  const pendingFocusCount = todaysTasks.filter(t => !t.completed).length;
+
+  // Background check for 5:00 PM Daily Reminder
+  useEffect(() => {
+    checkAndTrigger5pmReminder(todaysTasks);
+    const interval = setInterval(() => {
+      checkAndTrigger5pmReminder(todaysTasks);
+    }, 60000); // Check every 60s
+    return () => clearInterval(interval);
+  }, [todaysTasks]);
+
   // Auto-save to LocalStorage whenever state updates
   useEffect(() => {
     saveStateToLocalStorage(appState);
@@ -73,12 +89,6 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [appState]);
-
-  // Overall statistics computed live
-  const stats = computeOverallStats(appState.syllabus);
-  const weakTopics = getWeakTopicsList(appState.syllabus);
-  const todaysTasks = getTodaysTasksList(appState.syllabus, appState.customTasks || []);
-  const pendingFocusCount = todaysTasks.filter(t => !t.completed).length;
 
   // Handler: Toggle individual topic task
   const handleToggleTask = (subjectId, topicId, taskId) => {
