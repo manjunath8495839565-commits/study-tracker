@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
 import { getTodaysTasksList } from "../utils/timelineMath";
 
@@ -11,6 +11,12 @@ export const TodaysTasksPanel = ({
   onToggleCustomTask
 }) => {
   const [newCustomTaskLabel, setNewCustomTaskLabel] = useState("");
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const todaysTasks = getTodaysTasksList(syllabus, customTasks);
   const completedToday = todaysTasks.filter(t => t.completed).length;
@@ -51,9 +57,12 @@ export const TodaysTasksPanel = ({
             </div>
           </div>
 
-          <span className="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full font-medium border border-slate-700 self-start sm:self-auto">
-            {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-          </span>
+          <div className="flex items-center gap-2 bg-slate-800 text-slate-200 px-3 py-1 rounded-xl text-xs font-bold border border-slate-700 self-start sm:self-auto shadow-sm">
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <span>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+            <span className="text-slate-500">•</span>
+            <span>{now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          </div>
         </div>
 
         {/* Task Box Container */}

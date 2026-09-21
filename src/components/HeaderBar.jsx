@@ -1,18 +1,28 @@
-import React from "react";
-import { CheckCircle2, HelpCircle, Clock, RotateCcw, Award, Target } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { CheckCircle2, HelpCircle, Clock, RotateCcw, Award, Target, Calendar } from "lucide-react";
 
 export const HeaderBar = ({ stats }) => {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedTime = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const formattedDate = now.toLocaleDateString([], { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+
   return (
     <header className="header-bar bg-white text-brown-950 shadow-sm sticky top-0 z-40 border-b border-brown-200/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         
-        {/* Left Side: Title & Subtitle */}
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-brown-100/80 rounded-xl border border-brown-300/80 shadow-sm">
+        {/* Left Side: Title, Subtitle & Real-Time Live Clock Badge */}
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+          <div className="p-2.5 bg-brown-100/80 rounded-xl border border-brown-300/80 shadow-sm shrink-0">
             <Target className="w-8 h-8 text-brown-800 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-brown-950">
                 GATE Command Center 2028
               </h1>
@@ -20,9 +30,18 @@ export const HeaderBar = ({ stats }) => {
                 CS + DA Dual Stream
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-brown-700 font-medium mt-0.5">
-              Target: Feb 2028 · Ultimate Syllabus Breakdown, Minimum Benchmarks & Schedule Planner
-            </p>
+
+            <div className="flex items-center gap-3 text-xs sm:text-sm text-brown-700 font-medium mt-1 flex-wrap">
+              {/* Real-time live date & time pill */}
+              <div className="flex items-center gap-1.5 bg-amber-100/90 border border-amber-300 text-amber-950 px-2.5 py-0.5 rounded-lg text-xs font-extrabold shadow-2xs">
+                <Clock className="w-3.5 h-3.5 text-amber-800 animate-spin" style={{ animationDuration: "6s" }} />
+                <span>{formattedTime}</span>
+                <span className="text-amber-400">•</span>
+                <span>{formattedDate}</span>
+              </div>
+              <span className="hidden sm:inline text-brown-400">•</span>
+              <span className="text-brown-700 font-semibold">Target Exam: Feb 2028</span>
+            </div>
           </div>
         </div>
 
