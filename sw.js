@@ -37,7 +37,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch background update for cache freshness
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
@@ -54,7 +53,6 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Notification click event handler
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
