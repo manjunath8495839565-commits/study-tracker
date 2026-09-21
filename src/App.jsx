@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { HeaderBar } from "./components/HeaderBar";
+import { NavigationBar } from "./components/NavigationBar";
 import { SubjectFilterRow } from "./components/SubjectFilterRow";
 import { ActionButtonsRow } from "./components/ActionButtonsRow";
 import { SubjectList } from "./components/SubjectList";
@@ -10,7 +11,7 @@ import { GoogleSheetsModal } from "./components/GoogleSheetsModal";
 import { ResetModal } from "./components/ResetModal";
 
 import { getStoredState, saveStateToLocalStorage, resetStoredState, getDefaultState } from "./utils/storage";
-import { computeOverallStats } from "./utils/timelineMath";
+import { computeOverallStats, getWeakTopicsList, getTodaysTasksList } from "./utils/timelineMath";
 import { exportToCSV } from "./utils/csvExport";
 import { syncToGoogleSheets } from "./utils/googleSheetsSync";
 
@@ -18,6 +19,7 @@ export default function App() {
   // Load initial persistent state
   const [appState, setAppState] = useState(() => getStoredState());
   const [activeFilter, setActiveFilter] = useState("ALL");
+  const [activeTab, setActiveTab] = useState("PREP"); // PREP, SUBJECTS, TIMELINE, ANALYTICS, FULL
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Modal open states
@@ -41,6 +43,9 @@ export default function App() {
 
   // Overall statistics computed live
   const stats = computeOverallStats(appState.syllabus);
+  const weakTopics = getWeakTopicsList(appState.syllabus);
+  const todaysTasks = getTodaysTasksList(appState.syllabus, appState.customTasks || []);
+  const pendingFocusCount = todaysTasks.filter(t => !t.completed).length;
 
   // Handler: Toggle individual topic task
   const handleToggleTask = (subjectId, topicId, taskId) => {
@@ -188,59 +193,78 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white">
       
-      {/* SECTION 1: HEADER BAR */}
+      {/* SECTION 1: HEADER STATS BAR */}
       <HeaderBar stats={stats} />
 
-      {/* SECTION 2: SUBJECT FILTER ROW */}
-      <SubjectFilterRow
-        syllabus={appState.syllabus}
-        activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
+      {/* SECTION 2: INTERACTIVE TAB NAVIGATION BAR */}
+      <NavigationBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        pendingFocusCount={pendingFocusCount}
+        weakTopicsCount={weakTopics.length}
       />
 
-      {/* SECTION 3: ACTION BUTTONS ROW */}
-      <ActionButtonsRow
-        onSaveProgress={handleSaveProgress}
-        onExportCSV={handleExportCSV}
-        onOpenResetModal={() => setIsResetModalOpen(true)}
-        onOpenSheetsModal={() => setIsSheetsModalOpen(true)}
-        saveSuccess={saveSuccess}
-      />
+      {/* ACTION BUTTONS (ALWAYS ACCESSIBLE IN PREP / FULL / SUBJECTS VIEW) */}
+      {(activeTab === "PREP" || activeTab === "FULL" || activeTab === "SUBJECTS") && (
+        <ActionButtonsRow
+          onSaveProgress={handleSaveProgress}
+          onExportCSV={handleExportCSV}
+          onOpenResetModal={() => setIsResetModalOpen(true)}
+          onOpenSheetsModal={() => setIsSheetsModalOpen(true)}
+          saveSuccess={saveSuccess}
+        />
+      )}
 
-      {/* MAIN SINGLE SCROLLABLE PAGE CONTENT */}
+      {/* DYNAMIC TAB SECTION VIEWS */}
       <main className="space-y-4">
         
-        {/* SECTION 4: TODAY'S PRIORITY FOCUS TASKS (TOP OF SYLLABUS BREAKDOWN) */}
-        <TodaysTasksPanel
-          syllabus={appState.syllabus}
-          customTasks={appState.customTasks || []}
-          onToggleTask={handleToggleTask}
-          onToggleMasterTask={handleToggleMasterTask}
-          onAddCustomTask={handleAddCustomTask}
-          onToggleCustomTask={handleToggleCustomTask}
-        />
+        {/* VIEW 1: START PREPARATION & TODAY'S PRIORITY FOCUS TASKS */}
+        {(activeTab === "PREP" || activeTab === "FULL") && (
+          <TodaysTasksPanel
+            syllabus={appState.syllabus}
+            customTasks={appState.customTasks || []}
+            onToggleTask={handleToggleTask}
+            onToggleMasterTask={handleToggleMasterTask}
+            onAddCustomTask={handleAddCustomTask}
+            onToggleCustomTask={handleToggleCustomTask}
+          />
+        )}
 
-        {/* SECTION 5: SUBJECT LIST (SYLLABUS BREAKDOWN CARDS) */}
-        <SubjectList
-          syllabus={appState.syllabus}
-          activeFilter={activeFilter}
-          onToggleTask={handleToggleTask}
-          onUpdateTopicMetric={handleUpdateTopicMetric}
-          onToggleMasterTask={handleToggleMasterTask}
-        />
+        {/* VIEW 2: ALL SUBJECTS SYLLABUS BREAKDOWN */}
+        {(activeTab === "SUBJECTS" || activeTab === "FULL") && (
+          <>
+            <SubjectFilterRow
+              syllabus={appState.syllabus}
+              activeFilter={activeFilter}
+              setActiveFilter={setActiveFilter}
+            />
 
-        {/* SECTION 6: COMPLETION TIMELINE CALCULATOR */}
-        <TimelineCalculator
-          syllabus={appState.syllabus}
-          dailyGoalPace={appState.dailyGoalPace}
-          onChangePace={handleChangePace}
-        />
+            <SubjectList
+              syllabus={appState.syllabus}
+              activeFilter={activeFilter}
+              onToggleTask={handleToggleTask}
+              onUpdateTopicMetric={handleUpdateTopicMetric}
+              onToggleMasterTask={handleToggleMasterTask}
+            />
+          </>
+        )}
 
-        {/* SECTION 7: WEAK-TOPIC & ANALYTICS SECTION */}
-        <WeakTopicAnalytics
-          syllabus={appState.syllabus}
-          streakData={appState.streakData}
-        />
+        {/* VIEW 3: TIMELINE & VELOCITY CALCULATOR */}
+        {(activeTab === "TIMELINE" || activeTab === "FULL") && (
+          <TimelineCalculator
+            syllabus={appState.syllabus}
+            dailyGoalPace={appState.dailyGoalPace}
+            onChangePace={handleChangePace}
+          />
+        )}
+
+        {/* VIEW 4: WEAK-TOPIC & ANALYTICS SECTION */}
+        {(activeTab === "ANALYTICS" || activeTab === "FULL") && (
+          <WeakTopicAnalytics
+            syllabus={appState.syllabus}
+            streakData={appState.streakData}
+          />
+        )}
 
       </main>
 
