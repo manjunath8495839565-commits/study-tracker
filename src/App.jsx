@@ -10,6 +10,7 @@ import { WeakTopicAnalytics } from "./components/WeakTopicAnalytics";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { GoogleSheetsModal } from "./components/GoogleSheetsModal";
 import { ResetModal } from "./components/ResetModal";
+import { InstallAppModal } from "./components/InstallAppModal";
 
 import { getStoredState, saveStateToLocalStorage, resetStoredState, getDefaultState } from "./utils/storage";
 import { computeOverallStats, getWeakTopicsList, getTodaysTasksList } from "./utils/timelineMath";
@@ -29,6 +30,7 @@ export default function App() {
   // Modal open states
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   // Auto-save to LocalStorage whenever state updates
   useEffect(() => {
@@ -201,6 +203,11 @@ export default function App() {
         <WelcomeScreen
           stats={stats}
           onStartPrep={() => setCurrentScreen("DASHBOARD")}
+          onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        />
+        <InstallAppModal
+          isOpen={isInstallModalOpen}
+          onClose={() => setIsInstallModalOpen(false)}
         />
       </div>
     );
@@ -213,6 +220,7 @@ export default function App() {
       {/* SCREEN 2 TOP BACK BAR */}
       <DashboardTopBar
         onBackToWelcome={() => setCurrentScreen("WELCOME")}
+        onOpenInstallModal={() => setIsInstallModalOpen(true)}
       />
 
       {/* INTERACTIVE TAB NAVIGATION BAR */}
@@ -306,6 +314,11 @@ export default function App() {
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
         onConfirmReset={handleConfirmReset}
+      />
+
+      <InstallAppModal
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
       />
 
     </div>

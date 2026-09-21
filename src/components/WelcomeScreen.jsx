@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Target, CheckCircle2, HelpCircle, Clock, RotateCcw, Award, ArrowRight, Zap, Calendar, Sparkles } from "lucide-react";
+import { Target, CheckCircle2, HelpCircle, Clock, RotateCcw, Award, ArrowRight, Zap, Calendar, Sparkles, Smartphone, Download } from "lucide-react";
 
-export const WelcomeScreen = ({ stats, onStartPrep }) => {
+export const WelcomeScreen = ({ stats, onStartPrep, onOpenInstallModal }) => {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -23,8 +23,10 @@ export const WelcomeScreen = ({ stats, onStartPrep }) => {
         
         {/* TOP BRANDING & LIVE CLOCK */}
         <div className="text-center space-y-4">
-          <div className="inline-flex p-4 bg-brown-100 border border-brown-300 rounded-3xl shadow-sm mb-2">
-            <Target className="w-12 h-12 text-brown-800 animate-pulse" />
+          <div className="flex justify-center items-center gap-3">
+            <div className="inline-flex p-4 bg-brown-100 border border-brown-300 rounded-3xl shadow-sm">
+              <Target className="w-10 h-10 sm:w-12 sm:h-12 text-brown-800 animate-pulse" />
+            </div>
           </div>
 
           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -36,7 +38,7 @@ export const WelcomeScreen = ({ stats, onStartPrep }) => {
             </span>
           </div>
 
-          {/* Real-time Date & Time Bar */}
+          {/* Real-time Date & Time Bar + Install Mobile App Button */}
           <div className="flex items-center justify-center gap-3 text-xs sm:text-sm text-brown-700 flex-wrap pt-1 font-medium">
             <div className="flex items-center gap-2 bg-white border border-brown-300 text-brown-950 px-3.5 py-1.5 rounded-xl font-extrabold shadow-2xs">
               <Clock className="w-4 h-4 text-amber-700 animate-spin" style={{ animationDuration: "6s" }} />
@@ -49,6 +51,18 @@ export const WelcomeScreen = ({ stats, onStartPrep }) => {
               <Calendar className="w-3.5 h-3.5 text-brown-800" />
               Target Exam: <strong className="text-brown-950 font-black">February 2028</strong>
             </span>
+            {onOpenInstallModal && (
+              <>
+                <span className="text-brown-400">•</span>
+                <button
+                  onClick={onOpenInstallModal}
+                  className="bg-gradient-to-r from-brown-900 via-espresso-900 to-brown-950 hover:from-brown-800 hover:to-brown-900 text-amber-200 border border-amber-400/40 px-3.5 py-1.5 rounded-xl font-extrabold flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+                >
+                  <Smartphone className="w-4 h-4 text-amber-300" />
+                  <span>📲 Install App on Phone</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
