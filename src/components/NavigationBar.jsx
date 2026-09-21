@@ -40,7 +40,7 @@ export const NavigationBar = ({
   ];
 
   return (
-    <nav className="bg-white border-b border-brown-200/80 shadow-xs sticky top-[73px] z-30">
+    <nav className="bg-white border-b border-brown-200/80 shadow-xs sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-2">
           <div className="flex items-center gap-1 sm:gap-2">

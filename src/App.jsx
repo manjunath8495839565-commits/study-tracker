@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { HeaderBar } from "./components/HeaderBar";
+import { DashboardTopBar } from "./components/DashboardTopBar";
 import { NavigationBar } from "./components/NavigationBar";
 import { SubjectFilterRow } from "./components/SubjectFilterRow";
 import { ActionButtonsRow } from "./components/ActionButtonsRow";
@@ -210,9 +210,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white transition-opacity duration-300 ease-in-out">
       
-      {/* SCREEN 2 HEADER WITH BACK BUTTON */}
-      <HeaderBar
-        stats={stats}
+      {/* SCREEN 2 TOP BACK BAR */}
+      <DashboardTopBar
         onBackToWelcome={() => setCurrentScreen("WELCOME")}
       />
 
