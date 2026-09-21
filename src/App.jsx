@@ -235,17 +235,6 @@ export default function App() {
     setNotifPermissionState(typeof window !== "undefined" && "Notification" in window ? Notification.permission : result);
   };
 
-  const handleToggleNotifSetting = async () => {
-    if (typeof window === "undefined" || !("Notification" in window)) return;
-    if (Notification.permission === "default") {
-      const res = await requestNotificationPermission();
-      localStorage.setItem("gate_notification_prompt_choice", res === "granted" ? "allowed" : "blocked");
-      setNotifPermissionState(res);
-    } else {
-      setIsNotifPromptOpen(true);
-    }
-  };
-
   if (currentScreen === "WELCOME") {
     return (
       <div className="transition-opacity duration-300 ease-in-out">
@@ -273,6 +262,7 @@ export default function App() {
       <DashboardTopBar
         onBackToWelcome={() => setCurrentScreen("WELCOME")}
         onOpenInstallModal={handleOpenInstallModal}
+        onOpenNotifSettings={() => setIsNotifPromptOpen(true)}
       />
 
       <NavigationBar
@@ -289,8 +279,6 @@ export default function App() {
           onOpenResetModal={() => setIsResetModalOpen(true)}
           onOpenSheetsModal={() => setIsSheetsModalOpen(true)}
           saveSuccess={saveSuccess}
-          notifEnabled={notifPermissionState === "granted"}
-          onToggleNotification={handleToggleNotifSetting}
         />
       )}
 

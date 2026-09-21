@@ -6,9 +6,7 @@ export const ActionButtonsRow = ({
   onExportCSV,
   onOpenResetModal,
   onOpenSheetsModal,
-  saveSuccess,
-  notifEnabled,
-  onToggleNotification
+  saveSuccess
 }) => {
   return (
     <div className="bg-white border-b border-brown-200/80 py-3.5 shadow-sm">
@@ -29,22 +27,6 @@ export const ActionButtonsRow = ({
             {saveSuccess ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
             <span>{saveSuccess ? "Saved to Browser!" : "Save Progress"}</span>
           </button>
-
-          {/* 5 PM Reminders Settings Toggle */}
-          {onToggleNotification && (
-            <button
-              onClick={onToggleNotification}
-              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 border shadow-sm ${
-                notifEnabled
-                  ? "bg-amber-100/80 text-brown-950 border-amber-300 hover:bg-amber-200/80"
-                  : "bg-brown-50 text-brown-800 border-brown-300/80 hover:bg-brown-100"
-              }`}
-              title="Toggle 5:00 PM Daily Reminder Notifications"
-            >
-              <Bell className={`w-4 h-4 ${notifEnabled ? "text-amber-800" : "text-brown-600"}`} />
-              <span>{notifEnabled ? "5 PM Reminder: ON" : "5 PM Reminder: OFF"}</span>
-            </button>
-          )}
 
           {/* Export CSV Button */}
           <button
