@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Bell, Smartphone, Sparkles } from "lucide-react";
+import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Sparkles } from "lucide-react";
 import { getTodaysTasksList } from "../utils/timelineMath";
-import {
-  getNotificationPermission,
-  requestNotificationPermission,
-  sendTaskNotification,
-  isNotificationSupported
-} from "../utils/notifications";
 
 export const TodaysTasksPanel = ({
   syllabus,
@@ -18,8 +12,6 @@ export const TodaysTasksPanel = ({
 }) => {
   const [newCustomTaskLabel, setNewCustomTaskLabel] = useState("");
   const [now, setNow] = useState(() => new Date());
-  const [notifPermission, setNotifPermission] = useState(() => getNotificationPermission());
-  const [testSent, setTestSent] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -27,22 +19,7 @@ export const TodaysTasksPanel = ({
   }, []);
 
   const todaysTasks = getTodaysTasksList(syllabus, customTasks);
-  const incompleteTasks = todaysTasks.filter(t => !t.completed);
   const completedToday = todaysTasks.filter(t => t.completed).length;
-
-  const handleEnableNotifications = async () => {
-    const permission = await requestNotificationPermission();
-    setNotifPermission(permission);
-    if (permission === "granted") {
-      sendTaskNotification(incompleteTasks.length > 0 ? incompleteTasks : [{ text: "All GATE 2028 tasks completed today!" }]);
-    }
-  };
-
-  const handleTestNotification = () => {
-    sendTaskNotification(incompleteTasks.length > 0 ? incompleteTasks : [{ text: "Example: Operating Systems (Process Synchronization)" }]);
-    setTestSent(true);
-    setTimeout(() => setTestSent(false), 3000);
-  };
 
   const handleAddCustom = (e) => {
     e.preventDefault();
@@ -57,7 +34,6 @@ export const TodaysTasksPanel = ({
     <div className="py-6 border-t border-brown-200 bg-white/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="p-1.5 bg-amber-100 rounded-lg border border-amber-300">
@@ -88,50 +64,8 @@ export const TodaysTasksPanel = ({
           </div>
         </div>
 
-        {/* Task Box Container */}
         <div className="bg-white border border-brown-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
           
-          {/* 5:00 PM AUTOMATIC MOBILE NOTIFICATION BAR */}
-          <div className="bg-gradient-to-r from-brown-900 via-espresso-900 to-brown-950 text-amber-100 rounded-xl p-3.5 sm:p-4 shadow-sm border border-brown-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-500/20 border border-amber-400/30 rounded-lg text-amber-300 shrink-0">
-                <Bell className="w-5 h-5 animate-bounce" style={{ animationDuration: '3s' }} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-extrabold text-sm text-amber-200">5:00 PM Automatic Daily Mobile Notification</h4>
-                  <span className="bg-amber-400/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-400/30">
-                    AUTOMATIC 5 PM PUSH
-                  </span>
-                </div>
-                <p className="text-xs text-amber-100/80 font-medium mt-0.5">
-                  Automatic lock-screen alerts for incomplete priority focus tasks every evening at 5:00 PM.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
-              {notifPermission === "granted" ? (
-                <button
-                  onClick={handleTestNotification}
-                  className="px-3 py-1.5 bg-emerald-900/60 hover:bg-emerald-900/80 text-emerald-200 border border-emerald-500/40 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-                  <span>{testSent ? "Notification Sent!" : "5 PM Active (Test Now)"}</span>
-                </button>
-              ) : (
-                <button
-                  onClick={handleEnableNotifications}
-                  className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-brown-950 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
-                >
-                  <Bell className="w-3.5 h-3.5 text-brown-950" />
-                  <span>🔔 Enable 5 PM Notification</span>
-                </button>
-              )}
-            </div>
-          </div>
-          
-          {/* Quick Add Custom Focus Task Form */}
           <form onSubmit={handleAddCustom} className="flex gap-2">
             <input
               type="text"
@@ -149,77 +83,84 @@ export const TodaysTasksPanel = ({
             </button>
           </form>
 
-          {/* List of Today's Tasks */}
           {todaysTasks.length === 0 ? (
-            <div className="p-6 text-center bg-brown-50/60 rounded-xl text-brown-700 text-sm border border-brown-200 font-medium">
-              🎉 No pending focus tasks left for today! All current module targets completed.
+            <div className="text-center py-8 text-brown-600 font-medium">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
+              <p>All priority tasks for today are completed! Great job keeping up your pace.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {todaysTasks.map((task, idx) => {
-                const isOverdue = !task.completed && !task.isCurrentMonth && !task.isCustom;
+            <div className="space-y-2.5">
+              {todaysTasks.map((task) => {
+                const isCustom = task.isCustom;
+                const isMaster = task.isMaster;
 
                 return (
                   <div
-                    key={task.id || idx}
-                    className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                    key={task.id}
+                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
                       task.completed
-                        ? "bg-emerald-50/30 border-emerald-200 opacity-70"
-                        : isOverdue
-                        ? "bg-rose-50/80 border-rose-200 shadow-2xs"
-                        : "bg-white border-brown-200/90 hover:border-brown-300 shadow-2xs"
+                        ? "bg-amber-50/40 border-amber-200/60 text-brown-600 line-through"
+                        : "bg-white border-brown-200 text-brown-950 hover:border-brown-300 shadow-2xs"
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <button
                         onClick={() => {
-                          if (task.isCustom) {
+                          if (isCustom) {
                             onToggleCustomTask(task.id);
-                          } else if (task.isMaster) {
+                          } else if (isMaster) {
                             onToggleMasterTask(task.subjectId, task.id);
                           } else {
                             onToggleTask(task.subjectId, task.topicId, task.id);
                           }
                         }}
-                        className="cursor-pointer text-brown-500 hover:text-brown-900 transition-colors shrink-0"
+                        className="text-brown-700 hover:text-brown-900 cursor-pointer shrink-0 transition-colors"
                       >
                         {task.completed ? (
-                          <CheckSquare className="w-5 h-5 text-emerald-600" />
+                          <CheckSquare className="w-5 h-5 text-amber-700 fill-amber-100" />
                         ) : (
-                          <Square className="w-5 h-5 text-brown-400" />
+                          <Square className="w-5 h-5 text-brown-400 hover:text-brown-700" />
                         )}
                       </button>
 
-                      <div className="truncate space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-sm font-bold truncate ${
-                            task.completed ? "line-through text-brown-400" : "text-brown-950"
-                          }`}>
-                            {task.label}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-extrabold text-sm truncate">
+                            {task.label || task.topicName || task.text}
                           </span>
-                          {isOverdue && (
-                            <span className="bg-rose-100 text-rose-800 border border-rose-300 text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1">
-                              <AlertCircle className="w-2.5 h-2.5 text-rose-600" /> Overdue
+
+                          {!isCustom && (
+                            <span className="bg-brown-100 text-brown-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-brown-200">
+                              {task.subjectName}
+                            </span>
+                          )}
+
+                          {isCustom && (
+                            <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-amber-200">
+                              Custom Focus
+                            </span>
+                          )}
+
+                          {isMaster && (
+                            <span className="bg-brown-800 text-amber-100 text-[10px] font-extrabold px-2 py-0.5 rounded-md">
+                              Master Milestone
                             </span>
                           )}
                         </div>
 
-                        {!task.isCustom && (
-                          <div className="text-xs text-brown-600 font-medium truncate">
-                            <strong className="text-brown-900">{task.subjectName}</strong> • {task.topicName}
-                          </div>
+                        {!isCustom && !isMaster && task.topicName && (
+                          <p className="text-xs text-brown-600 font-medium truncate mt-0.5">
+                            Topic: {task.topicName}
+                          </p>
                         )}
                       </div>
                     </div>
 
-                    <span className={`text-[11px] px-2 py-0.5 rounded font-bold shrink-0 border ${
-                      task.type === "reading" ? "bg-brown-100 text-brown-900 border-brown-300" :
-                      task.type === "solving" || task.type === "pyq" ? "bg-espresso-100 text-espresso-950 border-espresso-300" :
-                      task.type === "revision" ? "bg-amber-100 text-amber-950 border-amber-300" :
-                      "bg-brown-50 text-brown-800 border-brown-200"
-                    }`}>
-                      {task.type ? task.type.toUpperCase() : "TASK"}
-                    </span>
+                    {task.completedAt && (
+                      <span className="text-[11px] text-brown-500 font-medium shrink-0 ml-2">
+                        {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -227,7 +168,6 @@ export const TodaysTasksPanel = ({
           )}
 
         </div>
-
       </div>
     </div>
   );

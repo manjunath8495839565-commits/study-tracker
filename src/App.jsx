@@ -11,6 +11,7 @@ import { WelcomeScreen } from "./components/WelcomeScreen";
 import { GoogleSheetsModal } from "./components/GoogleSheetsModal";
 import { ResetModal } from "./components/ResetModal";
 import { InstallAppModal } from "./components/InstallAppModal";
+import { AlarmModal } from "./components/AlarmModal";
 
 import { getStoredState, saveStateToLocalStorage, resetStoredState, getDefaultState } from "./utils/storage";
 import { computeOverallStats, getWeakTopicsList, getTodaysTasksList } from "./utils/timelineMath";
@@ -28,7 +29,17 @@ export default function App() {
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+      const timer = setTimeout(() => {
+        setIsAlarmModalOpen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     const checkStandalone = () => {
@@ -327,6 +338,11 @@ export default function App() {
       <InstallAppModal
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
+      />
+
+      <AlarmModal
+        isOpen={isAlarmModalOpen}
+        onClose={() => setIsAlarmModalOpen(false)}
       />
 
     </div>
