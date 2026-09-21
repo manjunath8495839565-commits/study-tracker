@@ -31,6 +31,33 @@ export default function App() {
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  // Detect if running inside installed standalone PWA app
+  useEffect(() => {
+    const checkStandalone = () => {
+      const standalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://');
+      setIsStandalone(standalone);
+    };
+
+    checkStandalone();
+
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleChange = (e) => setIsStandalone(e.matches);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    }
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      }
+    };
+  }, []);
+
+  const handleOpenInstallModal = isStandalone ? null : () => setIsInstallModalOpen(true);
 
   // Auto-save to LocalStorage whenever state updates
   useEffect(() => {
@@ -203,7 +230,7 @@ export default function App() {
         <WelcomeScreen
           stats={stats}
           onStartPrep={() => setCurrentScreen("DASHBOARD")}
-          onOpenInstallModal={() => setIsInstallModalOpen(true)}
+          onOpenInstallModal={handleOpenInstallModal}
         />
         <InstallAppModal
           isOpen={isInstallModalOpen}
@@ -220,7 +247,7 @@ export default function App() {
       {/* SCREEN 2 TOP BACK BAR */}
       <DashboardTopBar
         onBackToWelcome={() => setCurrentScreen("WELCOME")}
-        onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        onOpenInstallModal={handleOpenInstallModal}
       />
 
       {/* INTERACTIVE TAB NAVIGATION BAR */}
