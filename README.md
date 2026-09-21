@@ -18,9 +18,9 @@ An interactive, full-featured web and mobile Progressive Web Application (PWA) e
 - **Offline Capable:** Powered by Service Workers (`sw.js`) for instant loading even without internet connection.
 - **Smart Standalone Mode:** Automatically hides installation prompts when running inside the downloaded app.
 
-### 🔔 2. 5:00 PM Automatic Daily Mobile Alarm
-- **Automatic Lock-Screen Alerts:** Prompts users on launch with a clean dialog to enable 5:00 PM daily target alarms.
-- **Background Push Notification:** Sends native mobile lock-screen alerts at 5:00 PM summarizing today's incomplete priority focus tasks.
+### 🔔 2. 5:00 PM Native Browser-Style Permission Prompt & Settings Toggle
+- **Top-Anchored Native Prompt:** Small, elegant browser-style prompt anchored at the top of the screen: *"Enable 5:00 PM daily reminders?"* with **Allow** and **Not now** options.
+- **Persistent Choice & Toggle:** Remembers user choice in `localStorage`. Includes a settings toggle (`🔔 5 PM Reminder: ON/OFF`) in the main action bar for re-enabling/disabling anytime.
 
 ### 📱 3. Two-Screen Flow Architecture
 - **Screen 1 — Landing / Welcome Screen:** Clean landing dashboard with real-time live clock, target exam countdown (Feb 2028), 4 main stat cards, overall progress percentage, and **START PREPARATION** CTA.
