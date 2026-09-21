@@ -1,82 +1,122 @@
-# 🎓 GATE Command Center 2028 — Ultimate CS + DA Prep & Target Scheduler
+# 🎯 GATE Command Center 2028 — Ultimate CS + DA Dual Stream Preparation & Target Tracker
 
-An interactive web application for tracking, analyzing, and optimizing GATE 2028 preparation across Computer Science (CS) and Data Science & AI (DA) streams.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success?style=for-the-badge&logo=github)](https://manjunath8495839565-commits.github.io/study-tracker/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Mobile%20App%20Ready-583323?style=for-the-badge&logo=pwa)](https://manjunath8495839565-commits.github.io/study-tracker/)
+[![React](https://img.shields.io/badge/React-19.2-blue?style=for-the-badge&logo=react)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Warm_Brown_Theme-a3643b?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
 
----
+An interactive, full-featured web and mobile Progressive Web Application (PWA) engineered for engineering students targeting **GATE 2028 (Computer Science + Data Science & AI Dual Stream)**.
 
-## 🔥 Features & Capabilities
-
-### 📚 Complete Syllabus Module Breakdown
-- **Full GATE Syllabus Integration**: Covers 12 GATE CS subjects & 8 GATE DA subjects with granular topic breakdowns.
-- **Auto-Generated Task Checkboxes**: Generates custom task workflows based on topic complexity (`small`, `medium`, `large`):
-  - Theory Reading & Core Concepts
-  - Concept Derivations & Notes
-  - Standard Practice Sets
-  - Comprehensive GATE Past Year Questions (PYQs)
-  - Timed Test & Speed Drills
-- **Subject Master Milestones**: Formula sheet creation, comprehensive subject revision, and mini mock tests.
-
-### ⏱️ Search-Based Minimum Required Study Time
-- **Research-Backed Minimum Time Benchmarks**:
-  - `Small Topic`: **4 Hours minimum** (1.5h theory + 2.5h practice/PYQs)
-  - `Medium Topic`: **10 Hours minimum** (3h theory + 2h derivations + 3h practice + 2h PYQs)
-  - `Large Topic`: **20 Hours minimum** (5h comprehensive theory + 3h proofs + 6h practice sets + 3h PYQs + 3h speed drill)
-- **Live Minimum Time Progress Bar**: Displays logged study hours vs. minimum benchmark requirement with visual completion badges (`Logged: X.Xh / YYh`).
-- **Editable Custom Minimum Targets**: Adjust target minimum study hours per topic to match personal preparation intensity.
-
-### 🎯 Best Exam Target Date & Schedule Planner
-- **Optimal Completion Target Date**: Dynamically calculates the best finish deadline for each topic leading up to the GATE Exam Date (`Feb 2028` / `Dec 31, 2027` target completion).
-- **Exam Countdown**: Live day countdown until GATE Exam.
-- **Recommended Daily Pace**: Displays recommended daily study allocation (e.g. `1.5 - 2.0 h/day`).
-
-### ⚡ Velocity Calculator & Progress Analytics
-- **Pace Calculator**: Input daily task capacity to calculate projected completion date and schedule status (`Ahead` / `Behind`).
-- **Weak Topic Analytics**: Auto-flags topics with <60% accuracy for priority revision drills.
-- **Streak & Today's Focus Panel**: Daily task drawer with streak counter and customizable focus tasks.
-
-### 💾 Storage & Data Export
-- **Auto LocalStorage Persistence**: Automatically saves all progress in real time.
-- **Google Sheets Sync**: Option to link a Google Apps Script web app endpoint for cloud backup.
-- **One-Click CSV Export**: Download complete syllabus metrics in spreadsheet format.
+🔗 **Live Web & Mobile App:** [https://manjunath8495839565-commits.github.io/study-tracker/](https://manjunath8495839565-commits.github.io/study-tracker/)
 
 ---
 
-## 🚀 Quick Start Guide
+## 🌟 Key Highlights
+
+### 📱 1. Mobile App (PWA) — No App Store Needed!
+- **Standalone Mobile Experience:** Install directly on Android or iPhone home screens without Google Play Store or Apple App Store.
+- **Offline Capable:** Powered by Service Workers (`sw.js`) for instant loading even without internet.
+- **Auto-Hide Install Buttons:** Smart standalone detection (`display-mode: standalone`) hides install prompts when running inside the installed app.
+
+### 🔔 2. 5:00 PM Daily Push Notifications & SMS Alerts
+- **Automatic Evening Notification:** Sends native mobile lock-screen alerts at 5:00 PM summarizing today's incomplete priority focus tasks.
+- **1-Tap SMS Reminder:** Generates pre-formatted mobile SMS messages (`sms:?body=...`) to send task alerts directly to yourself or a study partner.
+
+### 📱 3. Two-Screen Flow Architecture
+- **Screen 1 — Landing / Welcome Screen:** Clean landing dashboard with real-time live clock, target exam countdown (Feb 2028), 4 main stat cards, overall progress percentage, and **START PREPARATION** CTA.
+- **Screen 2 — Main Preparation Dashboard:** Full command center with action buttons, custom filter tabs, syllabus breakdown, velocity calculator, and weak topics analytics.
+
+### 🎨 4. Tailored Warm Brown & Espresso Palette
+- Custom visual design using HSL warm brown (`#583323`), espresso (`#2d180f`), off-white (`#faf6f0`), and warm amber accents (`#e8a33d`) across all components.
+
+---
+
+## 🔥 Features & Functional Modules
+
+### 📚 1. Comprehensive Syllabus Breakdown (CS + DA Streams)
+- **Full Coverage:** 12 Core CS subjects + 8 Data Science & AI subjects + General Aptitude & Mathematics.
+- **Sequential Daily Focus:** Auto-selects ongoing subject topics based on real-time dates rather than random picks.
+- **Sub-task Checklists:** Theory reading, derivations, practice sets, PYQs, and speed drills.
+
+### ⏱️ 2. Minimum Required Study Hours & PYQ Benchmarks
+- Benchmark time allocations based on topic complexity (`Small`: 4h, `Medium`: 10h, `Large`: 20h).
+- Progress tracking against minimum recommended study hours.
+
+### ⚡ 3. Velocity & Pace Calculator
+- Custom pace slider to calculate projected completion dates and schedule status (`Ahead` / `Behind`).
+
+### 📊 4. Weak Topics & Revision Analytics
+- Auto-flags topics with <60% accuracy for priority revision drills.
+- Revision streak tracker and formulas checklist.
+
+### 💾 5. Data Persistence & Cloud Sync
+- **Local Storage Auto-Save:** Instant browser storage synchronization.
+- **Google Sheets Webhook Sync:** Background sync to custom Google Apps Script web endpoints.
+- **CSV Export:** One-click spreadsheet download of all metrics.
+
+---
+
+## 📱 Mobile App Installation Guide
+
+### 🤖 Android (Chrome / Edge / Samsung Internet / Brave)
+1. Open [https://manjunath8495839565-commits.github.io/study-tracker/](https://manjunath8495839565-commits.github.io/study-tracker/) in Chrome.
+2. Tap **"📲 Install App on Phone"** at the top or tap Chrome menu **(⋮)** ➔ **Install App** / **Add to Home Screen**.
+3. Tap **Install**. The **GATE 2028** app icon will appear on your phone home screen!
+
+### 🍎 iPhone / iPad (iOS Safari)
+1. Open [https://manjunath8495839565-commits.github.io/study-tracker/](https://manjunath8495839565-commits.github.io/study-tracker/) in **Safari**.
+2. Tap the **Share button (📤)** in Safari's bottom navigation bar.
+3. Scroll down and tap **"Add to Home Screen" (➕)**.
+4. Tap **Add**. Launches as a full-screen mobile app!
+
+---
+
+## 🚀 Local Development & Setup
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v16 or higher)
-- `npm` (comes with Node.js)
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- `npm`
 
-### Installation & Running Locally
-
-1. **Clone the repository**:
+### Steps
+1. **Clone the repository:**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/manjunath8495839565-commits/study-tracker.git
    cd "study tracker"
    ```
 
-2. **Install dependencies**:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Start the interactive development server**:
+3. **Start local dev server:**
    ```bash
    npm run dev
    ```
-   Or double-click `start.command` on macOS to launch the app directly in your browser.
 
-4. **Build for production**:
+4. **Build production bundle:**
    ```bash
    npm run build
+   ```
+
+5. **Deploy to GitHub Pages:**
+   ```bash
+   npm run deploy
    ```
 
 ---
 
 ## 🛠 Tech Stack
 
-- **Frontend**: React (Vite)
-- **Styling**: Tailwind CSS / Custom CSS Design Tokens
-- **Icons**: Lucide React
-- **Animations**: Canvas Confetti
-- **Storage**: Browser LocalStorage & Google Sheets Webhook Sync
+- **Framework:** React 19 + Vite
+- **Styling:** Tailwind CSS + Vanilla CSS Tokens
+- **Icons:** Lucide React
+- **PWA Specs:** Service Worker (`sw.js`), Web Manifest (`manifest.json`), Web Notifications API
+- **Animations:** Canvas Confetti
+- **Deployment:** GitHub Pages (`gh-pages`)
+
+---
+
+## 📄 License
+
+MIT License — Free to use for all GATE aspirants! Keep pushing for **GATE 2028**! 🎯🏆
