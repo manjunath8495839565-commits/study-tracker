@@ -1,11 +1,8 @@
-// CSV Export Generator for GATE 2028 Study Tracker
-
 import { calculateTopicSchedule } from "./timelineMath";
 
 export const exportToCSV = (syllabus, attemptsLog = []) => {
   const rows = [];
   
-  // Header row
   rows.push([
     "Subject ID",
     "Subject Name",
@@ -26,7 +23,6 @@ export const exportToCSV = (syllabus, attemptsLog = []) => {
     "Completed At"
   ]);
 
-  // Extract all tasks
   syllabus.forEach(subject => {
     subject.topics.forEach((topic, topicIdx) => {
       const schedule = calculateTopicSchedule(topic, subject.targetMonth, topicIdx, subject.topics.length);
@@ -53,7 +49,6 @@ export const exportToCSV = (syllabus, attemptsLog = []) => {
       });
     });
 
-    // Add subject master tasks
     subject.masterTasks.forEach(masterTask => {
       rows.push([
         subject.id,

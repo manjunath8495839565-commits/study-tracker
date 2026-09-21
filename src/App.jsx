@@ -19,22 +19,17 @@ import { syncToGoogleSheets } from "./utils/googleSheetsSync";
 import { checkAndTrigger5pmReminder } from "./utils/notifications";
 
 export default function App() {
-  // Navigation Screen State: "WELCOME" vs "DASHBOARD"
   const [currentScreen, setCurrentScreen] = useState("WELCOME");
-
-  // Main State
   const [appState, setAppState] = useState(() => getStoredState());
   const [activeFilter, setActiveFilter] = useState("ALL");
-  const [activeTab, setActiveTab] = useState("PREP"); // PREP, SUBJECTS, TIMELINE, ANALYTICS, FULL
+  const [activeTab, setActiveTab] = useState("PREP");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Modal open states
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
-  // Detect if running inside installed standalone PWA app
   useEffect(() => {
     const checkStandalone = () => {
       const standalone =
@@ -60,37 +55,32 @@ export default function App() {
 
   const handleOpenInstallModal = isStandalone ? null : () => setIsInstallModalOpen(true);
 
-  // Overall statistics computed live
   const stats = computeOverallStats(appState.syllabus);
   const weakTopics = getWeakTopicsList(appState.syllabus);
   const todaysTasks = getTodaysTasksList(appState.syllabus, appState.customTasks || []);
   const pendingFocusCount = todaysTasks.filter(t => !t.completed).length;
 
-  // Background check for 5:00 PM Daily Reminder
   useEffect(() => {
     checkAndTrigger5pmReminder(todaysTasks);
     const interval = setInterval(() => {
       checkAndTrigger5pmReminder(todaysTasks);
-    }, 60000); // Check every 60s
+    }, 60000);
     return () => clearInterval(interval);
   }, [todaysTasks]);
 
-  // Auto-save to LocalStorage whenever state updates
   useEffect(() => {
     saveStateToLocalStorage(appState);
 
-    // Optional background sync with Google Sheets if configured
     if (appState.googleSheetUrl) {
       const timer = setTimeout(() => {
         syncToGoogleSheets(appState.googleSheetUrl, appState).catch(err => {
           console.warn("Background Google Sheets sync error:", err);
         });
-      }, 3000); // 3-second debounce
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [appState]);
 
-  // Handler: Toggle individual topic task
   const handleToggleTask = (subjectId, topicId, taskId) => {
     setAppState(prevState => {
       const updatedSyllabus = prevState.syllabus.map(subject => {
@@ -118,7 +108,6 @@ export default function App() {
     });
   };
 
-  // Handler: Toggle subject master tasks (Revision, Formula Sheet, Mock Test)
   const handleToggleMasterTask = (subjectId, masterTaskId) => {
     setAppState(prevState => {
       const updatedSyllabus = prevState.syllabus.map(subject => {
@@ -140,7 +129,6 @@ export default function App() {
     });
   };
 
-  // Handler: Update topic metrics (Questions, Hours, Accuracy)
   const handleUpdateTopicMetric = (subjectId, topicId, metricKey, value) => {
     setAppState(prevState => {
       const updatedSyllabus = prevState.syllabus.map(subject => {
@@ -156,7 +144,6 @@ export default function App() {
             return { ...topic, minHours: Math.max(1, value) };
           }
 
-          // Update metrics on the first task item of the topic for persistence
           const updatedTasks = topic.tasks.map((task, idx) => {
             if (idx === 0) {
               return { ...task, [metricKey]: value };
@@ -174,7 +161,6 @@ export default function App() {
     });
   };
 
-  // Handler: Daily capacity pace change
   const handleChangePace = (newPace) => {
     setAppState(prev => ({
       ...prev,
@@ -182,7 +168,6 @@ export default function App() {
     }));
   };
 
-  // Handler: Custom tasks for Today's Tasks panel
   const handleAddCustomTask = (label) => {
     const newTask = {
       id: `custom_${Date.now()}`,
@@ -207,25 +192,21 @@ export default function App() {
     }));
   };
 
-  // Handler: Save progress button click
   const handleSaveProgress = () => {
     saveStateToLocalStorage(appState);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2500);
   };
 
-  // Handler: Export CSV
   const handleExportCSV = () => {
     exportToCSV(appState.syllabus, appState.attemptsLog);
   };
 
-  // Handler: Confirm Reset All
   const handleConfirmReset = () => {
     const fresh = resetStoredState();
     setAppState(fresh);
   };
 
-  // Handler: Save Google Sheet URL
   const handleSaveSheetUrl = (url) => {
     setAppState(prev => ({
       ...prev,
@@ -233,7 +214,6 @@ export default function App() {
     }));
   };
 
-  // SCREEN 1: LANDING / WELCOME SCREEN
   if (currentScreen === "WELCOME") {
     return (
       <div className="transition-opacity duration-300 ease-in-out">
@@ -250,17 +230,14 @@ export default function App() {
     );
   }
 
-  // SCREEN 2: MAIN DASHBOARD SCREEN
   return (
     <div className="min-h-screen bg-[#faf6f0] text-brown-950 font-sans selection:bg-brown-700 selection:text-white transition-opacity duration-300 ease-in-out">
       
-      {/* SCREEN 2 TOP BACK BAR */}
       <DashboardTopBar
         onBackToWelcome={() => setCurrentScreen("WELCOME")}
         onOpenInstallModal={handleOpenInstallModal}
       />
 
-      {/* INTERACTIVE TAB NAVIGATION BAR */}
       <NavigationBar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -268,7 +245,6 @@ export default function App() {
         weakTopicsCount={weakTopics.length}
       />
 
-      {/* ACTION BUTTONS (ACCESSIBLE IN PREP / FULL / SUBJECTS VIEW) */}
       {(activeTab === "PREP" || activeTab === "FULL" || activeTab === "SUBJECTS") && (
         <ActionButtonsRow
           onSaveProgress={handleSaveProgress}
@@ -279,10 +255,8 @@ export default function App() {
         />
       )}
 
-      {/* DYNAMIC TAB SECTION VIEWS */}
       <main className="space-y-4">
         
-        {/* VIEW 1: START PREPARATION & TODAY'S PRIORITY FOCUS TASKS */}
         {(activeTab === "PREP" || activeTab === "FULL") && (
           <TodaysTasksPanel
             syllabus={appState.syllabus}
@@ -294,7 +268,6 @@ export default function App() {
           />
         )}
 
-        {/* VIEW 2: ALL SUBJECTS SYLLABUS BREAKDOWN */}
         {(activeTab === "SUBJECTS" || activeTab === "FULL") && (
           <>
             <SubjectFilterRow
@@ -313,7 +286,6 @@ export default function App() {
           </>
         )}
 
-        {/* VIEW 3: TIMELINE & VELOCITY CALCULATOR */}
         {(activeTab === "TIMELINE" || activeTab === "FULL") && (
           <TimelineCalculator
             syllabus={appState.syllabus}
@@ -322,7 +294,6 @@ export default function App() {
           />
         )}
 
-        {/* VIEW 4: WEAK-TOPIC & ANALYTICS SECTION */}
         {(activeTab === "ANALYTICS" || activeTab === "FULL") && (
           <WeakTopicAnalytics
             syllabus={appState.syllabus}
@@ -332,13 +303,11 @@ export default function App() {
 
       </main>
 
-      {/* FOOTER */}
       <footer className="border-t border-brown-200 bg-white py-6 text-center text-xs text-brown-700">
         <p className="font-extrabold text-brown-950">GATE Command Center 2028 • CS + DA Dual Stream • Target Exam: February 2028</p>
         <p className="mt-1 font-medium">All data auto-saved to browser local storage and Google Sheets integration.</p>
       </footer>
 
-      {/* MODALS */}
       <GoogleSheetsModal
         isOpen={isSheetsModalOpen}
         onClose={() => setIsSheetsModalOpen(false)}

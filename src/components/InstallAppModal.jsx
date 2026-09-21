@@ -7,12 +7,10 @@ export const InstallAppModal = ({ isOpen, onClose }) => {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Detect iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
     const iosDevice = /iphone|ipad|ipod/.test(userAgent);
     setIsIOS(iosDevice);
 
-    // Check if already running in standalone mode (PWA installed)
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
       setIsInstalled(true);
     }

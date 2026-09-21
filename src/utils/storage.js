@@ -1,5 +1,3 @@
-// LocalStorage & State Management Utility with Auto-Save and Recovery
-
 import { buildInitialSyllabusState } from "../data/syllabusData";
 
 const STORAGE_KEY = "GATE_2028_STUDY_TRACKER_V1";
@@ -10,7 +8,6 @@ export const getStoredState = () => {
     if (!raw) return getDefaultState();
     const parsed = JSON.parse(raw);
     
-    // Ensure all 20 subjects exist in case of partial structure updates
     const initial = buildInitialSyllabusState();
     if (!parsed.syllabus || parsed.syllabus.length < initial.length) {
       return getDefaultState();

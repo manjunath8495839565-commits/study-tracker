@@ -1,7 +1,5 @@
-// Timeline Calculator & Comprehensive Math Metrics Engine for GATE 2028
-
-export const TARGET_DATE = new Date("2027-12-31T23:59:59"); // Complete syllabus by Dec 31 2027 for Jan-Feb 2028 mocks
-export const GATE_EXAM_DATE = new Date("2028-02-05T09:00:00"); // Feb 2028 GATE Exam
+export const TARGET_DATE = new Date("2027-12-31T23:59:59");
+export const GATE_EXAM_DATE = new Date("2028-02-05T09:00:00");
 
 export const computeOverallStats = (syllabus) => {
   let totalTopics = 0;
@@ -26,12 +24,10 @@ export const computeOverallStats = (syllabus) => {
       totalTasks += topicTasks.length;
       completedTasks += topicTasksDone;
 
-      // A topic is considered fully done if all its topic tasks are finished
       if (topicTasks.length > 0 && topicTasksDone === topicTasks.length) {
         topicsDone++;
       }
 
-      // Sum questions & hours
       topicTasks.forEach(t => {
         totalQuestionsPracticed += (t.questionsLogged || 0);
         totalStudyHours += (t.hoursSpent || 0);
@@ -40,13 +36,11 @@ export const computeOverallStats = (syllabus) => {
         }
       });
 
-      // Weak topics (< 60% accuracy)
       if (topic.accuracy > 0 && topic.accuracy < 60) {
         weakTopicsCount++;
       }
     });
 
-    // Subject master tasks
     const masterTasks = subject.masterTasks || [];
     totalTasks += masterTasks.length;
     masterTasks.forEach(mt => {
@@ -87,15 +81,13 @@ export const computeTimelineProjection = (syllabus, dailyTaskRate = 3) => {
   const projectedFinishDate = new Date();
   projectedFinishDate.setDate(today.getDate() + daysNeeded);
 
-  // Target date is Dec 31, 2027 (leaving Jan-Feb 2028 for full mocks/revision)
   const timeDiffToTarget = TARGET_DATE.getTime() - today.getTime();
   const daysRemainingUntilTarget = Math.max(1, Math.ceil(timeDiffToTarget / (1000 * 3600 * 24)));
 
-  const daysDifference = daysRemainingUntilTarget - daysNeeded; // Positive = Ahead, Negative = Behind
+  const daysDifference = daysRemainingUntilTarget - daysNeeded;
   
   const requiredPace = (remainingTasks / daysRemainingUntilTarget).toFixed(1);
 
-  // Exam days countdown
   const timeDiffToExam = GATE_EXAM_DATE.getTime() - today.getTime();
   const daysUntilExam = Math.max(0, Math.ceil(timeDiffToExam / (1000 * 3600 * 24)));
 
@@ -104,7 +96,7 @@ export const computeTimelineProjection = (syllabus, dailyTaskRate = 3) => {
     daysNeeded,
     projectedFinishDate,
     daysRemainingUntilTarget,
-    daysDifference, // >0: ahead, <0: behind
+    daysDifference,
     isAhead: daysDifference >= 0,
     daysAheadOrBehind: Math.abs(daysDifference),
     requiredPace,
@@ -133,7 +125,6 @@ export const getWeakTopicsList = (syllabus) => {
 export const getTodaysTasksList = (syllabus, customTasks = []) => {
   const todaysTasks = [];
   
-  // Custom user focus tasks
   customTasks.forEach(ct => {
     todaysTasks.push({
       ...ct,
@@ -141,7 +132,6 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
     });
   });
 
-  // Map schedule months to chronological order
   const monthOrder = {
     "Aug 2026": 1, "Sep 2026": 2, "Oct 2026": 3, "Nov 2026": 4, "Dec 2026": 5,
     "Jan 2027": 6, "Feb 2027": 7, "Mar 2027": 8, "Apr 2027": 9, "May 2027": 10,
@@ -149,7 +139,6 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
     "Nov 2027": 16, "Dec 2027": 17
   };
 
-  // Find active ongoing subjects with uncompleted tasks, ordered by schedule date
   const activeSubjects = [...syllabus]
     .filter(subject => {
       const topicTasksPending = (subject.topics || []).some(t => (t.tasks || []).some(tk => !tk.completed));
@@ -164,7 +153,6 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
 
   let candidateTasks = [];
 
-  // Extract tasks sequentially from ongoing subject(s) in chronological order
   activeSubjects.forEach(subject => {
     (subject.topics || []).forEach(topic => {
       (topic.tasks || []).forEach(task => {
@@ -197,25 +185,21 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
     });
   });
 
-  // Pick top 8 sequential tasks from current active ongoing subject schedule
   return [...todaysTasks, ...candidateTasks.slice(0, 8)];
 };
 
-// Search-based minimum time requirements per topic size (in hours)
 export const getTopicBenchmarkHours = (size = "medium") => {
   if (size === "small") return 4;
   if (size === "large") return 20;
-  return 10; // medium
+  return 10;
 };
 
-// Calculate best target date and prep schedule metrics for a specific topic before exam
 export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, totalTopicsInSubject = 1) => {
   const minHours = topic.minHours || getTopicBenchmarkHours(topic.size);
   const hoursSpent = topic.tasks?.[0]?.hoursSpent || 0;
   
-  // Parse target month string (e.g. "Aug 2026")
   let targetYear = 2026;
-  let monthIdx = 7; // Aug = index 7 (0-indexed: Aug = 7)
+  let monthIdx = 7;
   
   if (targetMonthStr) {
     const parts = targetMonthStr.split(" ");
@@ -228,14 +212,12 @@ export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, to
     }
   }
 
-  // Spread topic completion dates across the target month leading up to exam date
   const totalDaysInMonth = 28;
   const dayOffset = Math.max(1, Math.min(totalDaysInMonth, Math.round(((topicIndex + 1) / Math.max(1, totalTopicsInSubject)) * totalDaysInMonth)));
   
   const bestTargetDate = new Date(targetYear, monthIdx, dayOffset);
   const today = new Date();
   
-  // Days left from today until target date & exam date
   const daysUntilTarget = Math.ceil((bestTargetDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
   const daysUntilExam = Math.max(0, Math.ceil((GATE_EXAM_DATE.getTime() - today.getTime()) / (1000 * 3600 * 24)));
 
@@ -243,7 +225,6 @@ export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, to
   const hoursRemaining = Math.max(0, minHours - hoursSpent);
   const percentMinHoursDone = Math.min(100, Math.round((hoursSpent / minHours) * 100));
 
-  // Daily prep pace recommendation (e.g. ~1.5 - 2 hours per day to complete this topic)
   const recommendedDailyPace = minHours <= 4 ? "1.0 - 1.5 h/day" : minHours <= 10 ? "1.5 - 2.0 h/day" : "2.0 - 3.0 h/day";
 
   const formattedTargetDate = bestTargetDate.toLocaleDateString("en-US", {
@@ -265,4 +246,3 @@ export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, to
     recommendedDailyPace
   };
 };
-

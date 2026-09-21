@@ -9,9 +9,7 @@ export const SubjectList = ({
   onUpdateTopicMetric,
   onToggleMasterTask
 }) => {
-  // Track open/collapsed state per subject
   const [expandedSubjects, setExpandedSubjects] = useState(() => {
-    // Expand the first subject by default
     return { [syllabus[0]?.id]: true };
   });
 
@@ -22,7 +20,6 @@ export const SubjectList = ({
     }));
   };
 
-  // Filter subjects according to subject filter row
   const filteredSyllabus = syllabus.filter(subject => {
     if (activeFilter === "ALL") return true;
     if (activeFilter === "CS_ONLY") return subject.stream === "CS";
@@ -53,7 +50,6 @@ export const SubjectList = ({
               const isExpanded = !!expandedSubjects[subject.id];
               const isCS = subject.stream === "CS";
 
-              // Calculate subject level statistics
               let subTotalTasks = 0;
               let subCompletedTasks = 0;
 
@@ -174,17 +170,16 @@ export const SubjectList = ({
                           const isFullyDone = topicTasks.length > 0 && completedCount === topicTasks.length;
                           const isStarted = completedCount > 0;
 
-                          // Determine Status Dot Color
-                          let statusDotClass = "bg-slate-400"; // Not Started
+                          let statusDotClass = "bg-slate-400";
                           let statusText = "Not Started";
                           if (topic.accuracy > 0 && topic.accuracy < 60) {
-                            statusDotClass = "bg-rose-500 animate-pulse"; // Need Revision
+                            statusDotClass = "bg-rose-500 animate-pulse";
                             statusText = "Need Revision";
                           } else if (isFullyDone) {
-                            statusDotClass = "bg-emerald-600"; // Done
+                            statusDotClass = "bg-emerald-600";
                             statusText = "Done";
                           } else if (isStarted) {
-                            statusDotClass = "bg-amber-500"; // In Progress
+                            statusDotClass = "bg-amber-500";
                             statusText = "In Progress";
                           }
 

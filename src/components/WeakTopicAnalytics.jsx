@@ -8,7 +8,6 @@ export const WeakTopicAnalytics = ({
 }) => {
   const weakTopics = getWeakTopicsList(syllabus);
 
-  // Subject level accuracy calculations
   const subjectAccuracyList = syllabus.map(subject => {
     let sumAccuracy = 0;
     let topicCount = 0;

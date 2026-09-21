@@ -1,12 +1,4 @@
-// Google Sheets Integration & Web App Sync Module
-
 export const GOOGLE_APPS_SCRIPT_CODE = `
-// ====================================================================
-// GATE 2028 STUDY TRACKER — GOOGLE APPS SCRIPT BACKEND DATABASE CODE
-// Paste this code into Google Sheets -> Extensions -> Apps Script
-// Save & Deploy as Web App -> Access: "Anyone"
-// ====================================================================
-
 function doGet(e) {
   return handleRequest(e);
 }
@@ -22,7 +14,6 @@ function handleRequest(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     
-    // Ensure all required sheets exist
     var sheets = ['Syllabus', 'Tasks', 'Attempts', 'Revisions', 'MockTests'];
     sheets.forEach(function(sName) {
       if (!ss.getSheetByName(sName)) {
@@ -39,7 +30,6 @@ function handleRequest(e) {
       }
     }
 
-    // Default GET return
     var data = readAllData(ss);
     return ContentService.createTextOutput(JSON.stringify({ status: 'success', data: data }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -53,7 +43,6 @@ function handleRequest(e) {
 }
 
 function saveAllData(ss, data) {
-  // 1. Update Tasks sheet
   var taskSheet = ss.getSheetByName('Tasks');
   taskSheet.clear();
   taskSheet.appendRow(['TaskID', 'SubjectID', 'SubjectName', 'TopicName', 'Type', 'Label', 'Status', 'Questions', 'Hours', 'CompletedAt']);
@@ -79,7 +68,6 @@ function saveAllData(ss, data) {
     });
   }
 
-  // 2. Update Syllabus sheet
   var sylSheet = ss.getSheetByName('Syllabus');
   sylSheet.clear();
   sylSheet.appendRow(['SubjectID', 'SubjectName', 'Stream', 'TargetMonth', 'TopicName', 'Accuracy']);

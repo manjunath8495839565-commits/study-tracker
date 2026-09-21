@@ -1,5 +1,3 @@
-// Utility for Mobile PWA Push Notifications & 5:00 PM Daily SMS / Reminder System
-
 export const isNotificationSupported = () => {
   return typeof window !== "undefined" && "Notification" in window;
 };
@@ -60,7 +58,6 @@ export const sendTaskNotification = (incompleteTasks) => {
   }
 };
 
-// Generates an SMS URL (sms:?body=...) to send an SMS text message on mobile devices
 export const generateSmsDraftUrl = (incompleteTasks) => {
   const count = incompleteTasks.length;
   if (count === 0) {
@@ -79,7 +76,6 @@ export const generateSmsDraftUrl = (incompleteTasks) => {
   return `sms:?body=${message}`;
 };
 
-// Checks if 5:00 PM notification should be sent today
 export const checkAndTrigger5pmReminder = (todaysTasks) => {
   const incomplete = todaysTasks.filter((t) => !t.completed);
   if (incomplete.length === 0) return;
@@ -89,7 +85,6 @@ export const checkAndTrigger5pmReminder = (todaysTasks) => {
   const dateKey = now.toISOString().split("T")[0];
   const lastNotifiedDate = localStorage.getItem("gate_last_5pm_notified");
 
-  // Trigger at 5 PM (hour 17) or later if not already sent today
   if (currentHour >= 17 && lastNotifiedDate !== dateKey) {
     sendTaskNotification(incomplete);
     localStorage.setItem("gate_last_5pm_notified", dateKey);
