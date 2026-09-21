@@ -11,13 +11,13 @@ import { WelcomeScreen } from "./components/WelcomeScreen";
 import { GoogleSheetsModal } from "./components/GoogleSheetsModal";
 import { ResetModal } from "./components/ResetModal";
 import { InstallAppModal } from "./components/InstallAppModal";
-import { AlarmModal } from "./components/AlarmModal";
+import { BrowserPermissionPrompt } from "./components/BrowserPermissionPrompt";
 
 import { getStoredState, saveStateToLocalStorage, resetStoredState, getDefaultState } from "./utils/storage";
 import { computeOverallStats, getWeakTopicsList, getTodaysTasksList } from "./utils/timelineMath";
 import { exportToCSV } from "./utils/csvExport";
 import { syncToGoogleSheets } from "./utils/googleSheetsSync";
-import { checkAndTrigger5pmReminder, checkAndTriggerStreakBrokenAlert } from "./utils/notifications";
+import { checkAndTrigger5pmReminder, checkAndTriggerStreakBrokenAlert, requestNotificationPermission } from "./utils/notifications";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState("WELCOME");
@@ -29,14 +29,18 @@ export default function App() {
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
-  const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
+  const [isNotifPromptOpen, setIsNotifPromptOpen] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [notifPermissionState, setNotifPermissionState] = useState(() => 
+    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported"
+  );
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+    const choice = localStorage.getItem("gate_notification_prompt_choice");
+    if (!choice && typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
       const timer = setTimeout(() => {
-        setIsAlarmModalOpen(true);
-      }, 1500);
+        setIsNotifPromptOpen(true);
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -227,6 +231,21 @@ export default function App() {
     }));
   };
 
+  const handleNotifChoice = (result) => {
+    setNotifPermissionState(typeof window !== "undefined" && "Notification" in window ? Notification.permission : result);
+  };
+
+  const handleToggleNotifSetting = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      const res = await requestNotificationPermission();
+      localStorage.setItem("gate_notification_prompt_choice", res === "granted" ? "allowed" : "blocked");
+      setNotifPermissionState(res);
+    } else {
+      setIsNotifPromptOpen(true);
+    }
+  };
+
   if (currentScreen === "WELCOME") {
     return (
       <div className="transition-opacity duration-300 ease-in-out">
@@ -238,6 +257,11 @@ export default function App() {
         <InstallAppModal
           isOpen={isInstallModalOpen}
           onClose={() => setIsInstallModalOpen(false)}
+        />
+        <BrowserPermissionPrompt
+          isOpen={isNotifPromptOpen}
+          onClose={() => setIsNotifPromptOpen(false)}
+          onPermissionChoice={handleNotifChoice}
         />
       </div>
     );
@@ -265,6 +289,8 @@ export default function App() {
           onOpenResetModal={() => setIsResetModalOpen(true)}
           onOpenSheetsModal={() => setIsSheetsModalOpen(true)}
           saveSuccess={saveSuccess}
+          notifEnabled={notifPermissionState === "granted"}
+          onToggleNotification={handleToggleNotifSetting}
         />
       )}
 
@@ -340,9 +366,10 @@ export default function App() {
         onClose={() => setIsInstallModalOpen(false)}
       />
 
-      <AlarmModal
-        isOpen={isAlarmModalOpen}
-        onClose={() => setIsAlarmModalOpen(false)}
+      <BrowserPermissionPrompt
+        isOpen={isNotifPromptOpen}
+        onClose={() => setIsNotifPromptOpen(false)}
+        onPermissionChoice={handleNotifChoice}
       />
 
     </div>
