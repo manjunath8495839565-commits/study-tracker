@@ -208,9 +208,19 @@ export default function App() {
       />
 
       {/* MAIN SINGLE SCROLLABLE PAGE CONTENT */}
-      <main className="space-y-2">
+      <main className="space-y-4">
         
-        {/* SECTION 4: SUBJECT LIST (EXPANDABLE CARDS) */}
+        {/* SECTION 4: TODAY'S PRIORITY FOCUS TASKS (TOP OF SYLLABUS BREAKDOWN) */}
+        <TodaysTasksPanel
+          syllabus={appState.syllabus}
+          customTasks={appState.customTasks || []}
+          onToggleTask={handleToggleTask}
+          onToggleMasterTask={handleToggleMasterTask}
+          onAddCustomTask={handleAddCustomTask}
+          onToggleCustomTask={handleToggleCustomTask}
+        />
+
+        {/* SECTION 5: SUBJECT LIST (SYLLABUS BREAKDOWN CARDS) */}
         <SubjectList
           syllabus={appState.syllabus}
           activeFilter={activeFilter}
@@ -219,21 +229,11 @@ export default function App() {
           onToggleMasterTask={handleToggleMasterTask}
         />
 
-        {/* SECTION 5: COMPLETION TIMELINE CALCULATOR */}
+        {/* SECTION 6: COMPLETION TIMELINE CALCULATOR */}
         <TimelineCalculator
           syllabus={appState.syllabus}
           dailyGoalPace={appState.dailyGoalPace}
           onChangePace={handleChangePace}
-        />
-
-        {/* SECTION 6: TODAY'S TASKS PANEL */}
-        <TodaysTasksPanel
-          syllabus={appState.syllabus}
-          customTasks={appState.customTasks || []}
-          onToggleTask={handleToggleTask}
-          onToggleMasterTask={handleToggleMasterTask}
-          onAddCustomTask={handleAddCustomTask}
-          onToggleCustomTask={handleToggleCustomTask}
         />
 
         {/* SECTION 7: WEAK-TOPIC & ANALYTICS SECTION */}

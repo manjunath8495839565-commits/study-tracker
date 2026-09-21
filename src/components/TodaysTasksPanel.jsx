@@ -22,22 +22,31 @@ export const TodaysTasksPanel = ({
     setNewCustomTaskLabel("");
   };
 
+  const ongoingTask = todaysTasks.find(t => !t.isCustom);
+
   return (
-    <div className="py-6 border-t border-slate-800 bg-slate-900/80">
+    <div className="py-6 border-b border-slate-800 bg-slate-900/90">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="p-1.5 bg-amber-500/20 rounded-lg border border-amber-500/30">
               <Zap className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                Today's Priority Focus Tasks
-              </h2>
-              <p className="text-xs text-slate-400">
-                Pinned queue for immediate study • {completedToday} of {todaysTasks.length} completed
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                  Today's Priority Focus Tasks
+                </h2>
+                {ongoingTask && (
+                  <span className="bg-amber-950/80 text-amber-300 border border-amber-700/60 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    🎯 Ongoing: {ongoingTask.subjectName} ({ongoingTask.targetMonth})
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Sequential daily focus derived strictly from current ongoing subject date • {completedToday} of {todaysTasks.length} completed
               </p>
             </div>
           </div>

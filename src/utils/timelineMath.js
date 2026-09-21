@@ -133,7 +133,7 @@ export const getWeakTopicsList = (syllabus) => {
 export const getTodaysTasksList = (syllabus, customTasks = []) => {
   const todaysTasks = [];
   
-  // Custom user tasks
+  // Custom user focus tasks
   customTasks.forEach(ct => {
     todaysTasks.push({
       ...ct,
@@ -141,18 +141,33 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
     });
   });
 
-  // Pick uncompleted tasks from subjects scheduled for current target month or nearest target month
-  const currentMonthName = new Date().toLocaleString('en-US', { month: 'short' });
-  const currentYear = new Date().getFullYear();
-  const currentTargetTag = `${currentMonthName} ${currentYear}`;
+  // Map schedule months to chronological order
+  const monthOrder = {
+    "Aug 2026": 1, "Sep 2026": 2, "Oct 2026": 3, "Nov 2026": 4, "Dec 2026": 5,
+    "Jan 2027": 6, "Feb 2027": 7, "Mar 2027": 8, "Apr 2027": 9, "May 2027": 10,
+    "Jun 2027": 11, "Jul 2027": 12, "Aug 2027": 13, "Sep 2027": 14, "Oct 2027": 15,
+    "Nov 2027": 16, "Dec 2027": 17
+  };
+
+  // Find active ongoing subjects with uncompleted tasks, ordered by schedule date
+  const activeSubjects = [...syllabus]
+    .filter(subject => {
+      const topicTasksPending = (subject.topics || []).some(t => (t.tasks || []).some(tk => !tk.completed));
+      const masterTasksPending = (subject.masterTasks || []).some(mt => !mt.completed);
+      return topicTasksPending || masterTasksPending;
+    })
+    .sort((a, b) => {
+      const orderA = monthOrder[a.targetMonth] || 99;
+      const orderB = monthOrder[b.targetMonth] || 99;
+      return orderA - orderB;
+    });
 
   let candidateTasks = [];
 
-  syllabus.forEach(subject => {
-    const isTargetMonthMatch = subject.targetMonth === currentTargetTag;
-    
-    subject.topics.forEach(topic => {
-      topic.tasks.forEach(task => {
+  // Extract tasks sequentially from ongoing subject(s) in chronological order
+  activeSubjects.forEach(subject => {
+    (subject.topics || []).forEach(topic => {
+      (topic.tasks || []).forEach(task => {
         if (!task.completed) {
           candidateTasks.push({
             ...task,
@@ -161,15 +176,13 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
             topicId: topic.id,
             topicName: topic.name,
             accuracy: topic.accuracy,
-            isCurrentMonth: isTargetMonthMatch,
             targetMonth: subject.targetMonth
           });
         }
       });
     });
 
-    // Subject master tasks
-    subject.masterTasks.forEach(mt => {
+    (subject.masterTasks || []).forEach(mt => {
       if (!mt.completed) {
         candidateTasks.push({
           ...mt,
@@ -184,14 +197,7 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
     });
   });
 
-  // Sort candidate tasks: current month items first, then priority types (reading, pyq, solving)
-  candidateTasks.sort((a, b) => {
-    if (a.isCurrentMonth && !b.isCurrentMonth) return -1;
-    if (!a.isCurrentMonth && b.isCurrentMonth) return 1;
-    return 0;
-  });
-
-  // Limit today's list to top 8 items + custom tasks
+  // Pick top 8 sequential tasks from current active ongoing subject schedule
   return [...todaysTasks, ...candidateTasks.slice(0, 8)];
 };
 
