@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GATE CS+DA 2028 — Dual Stream Study Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brown: {
+                50: '#fcf9f4',
+                100: '#f6eedf',
+                200: '#ebd9c2',
+                300: '#dcbe9d',
+                400: '#cb9c74',
+                500: '#bb7f51',
+                600: '#a3643b',
+                700: '#844c2f',
+                800: '#6c3d28',
+                900: '#583323',
+                950: '#2d180f',
+              },
+              espresso: {
+                50: '#f9f6f0',
+                100: '#ede4d4',
+                200: '#dbc8aa',
+                300: '#c5a77c',
+                400: '#b28955',
+                500: '#9e713e',
+                600: '#825632',
+                700: '#66402a',
+                800: '#523425',
+                900: '#3d251a',
+                950: '#23130c',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      }
+      /* Custom scrollbar for White & Brown theme */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f6eedf;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a3643b;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="bg-[#faf6f0] text-brown-950 min-h-screen selection:bg-brown-700 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
