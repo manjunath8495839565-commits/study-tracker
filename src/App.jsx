@@ -208,7 +208,7 @@ export default function App() {
 
   // SCREEN 2: MAIN DASHBOARD SCREEN
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white transition-opacity duration-300 ease-in-out">
+    <div className="min-h-screen bg-[#faf6f0] text-brown-950 font-sans selection:bg-brown-700 selection:text-white transition-opacity duration-300 ease-in-out">
       
       {/* SCREEN 2 TOP BACK BAR */}
       <DashboardTopBar
@@ -288,9 +288,9 @@ export default function App() {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-        <p>GATE Command Center 2028 • CS + DA Dual Stream • Target Exam: February 2028</p>
-        <p className="mt-1">All data auto-saved to browser local storage and Google Sheets integration.</p>
+      <footer className="border-t border-brown-200 bg-white py-6 text-center text-xs text-brown-700">
+        <p className="font-extrabold text-brown-950">GATE Command Center 2028 • CS + DA Dual Stream • Target Exam: February 2028</p>
+        <p className="mt-1 font-medium">All data auto-saved to browser local storage and Google Sheets integration.</p>
       </footer>
 
       {/* MODALS */}
