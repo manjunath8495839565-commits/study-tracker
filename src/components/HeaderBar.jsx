@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { CheckCircle2, HelpCircle, Clock, RotateCcw, Award, Target, Calendar } from "lucide-react";
+import { CheckCircle2, HelpCircle, Clock, RotateCcw, Award, Target, Calendar, ArrowLeft } from "lucide-react";
 
-export const HeaderBar = ({ stats }) => {
+export const HeaderBar = ({ stats, onBackToWelcome }) => {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -16,17 +16,28 @@ export const HeaderBar = ({ stats }) => {
     <header className="header-bar bg-white text-brown-950 shadow-sm sticky top-0 z-40 border-b border-brown-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         
-        {/* Left Side: Title, Subtitle & Real-Time Live Clock Badge */}
+        {/* Left Side: Back Button, Title & Subtitle */}
         <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+          {onBackToWelcome && (
+            <button
+              onClick={onBackToWelcome}
+              className="px-3 py-2 bg-brown-100 hover:bg-brown-200 text-brown-950 border border-brown-300 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs group"
+              title="Return to Welcome Screen"
+            >
+              <ArrowLeft className="w-4 h-4 text-brown-800 group-hover:-translate-x-1 transition-transform" />
+              <span>Back</span>
+            </button>
+          )}
+
           <div className="p-2.5 bg-brown-100/80 rounded-xl border border-brown-300/80 shadow-sm shrink-0">
-            <Target className="w-8 h-8 text-brown-800 animate-pulse" />
+            <Target className="w-7 h-7 text-brown-800 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-brown-950">
+              <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-brown-950">
                 GATE Command Center 2028
               </h1>
-              <span className="bg-brown-800 text-brown-50 text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
+              <span className="bg-brown-800 text-brown-50 text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
                 CS + DA Dual Stream
               </span>
             </div>

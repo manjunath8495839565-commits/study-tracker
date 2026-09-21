@@ -7,6 +7,7 @@ import { SubjectList } from "./components/SubjectList";
 import { TimelineCalculator } from "./components/TimelineCalculator";
 import { TodaysTasksPanel } from "./components/TodaysTasksPanel";
 import { WeakTopicAnalytics } from "./components/WeakTopicAnalytics";
+import { WelcomeScreen } from "./components/WelcomeScreen";
 import { GoogleSheetsModal } from "./components/GoogleSheetsModal";
 import { ResetModal } from "./components/ResetModal";
 
@@ -16,7 +17,10 @@ import { exportToCSV } from "./utils/csvExport";
 import { syncToGoogleSheets } from "./utils/googleSheetsSync";
 
 export default function App() {
-  // Load initial persistent state
+  // Navigation Screen State: "WELCOME" vs "DASHBOARD"
+  const [currentScreen, setCurrentScreen] = useState("WELCOME");
+
+  // Main State
   const [appState, setAppState] = useState(() => getStoredState());
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [activeTab, setActiveTab] = useState("PREP"); // PREP, SUBJECTS, TIMELINE, ANALYTICS, FULL
@@ -190,13 +194,29 @@ export default function App() {
     }));
   };
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white">
-      
-      {/* SECTION 1: HEADER STATS BAR */}
-      <HeaderBar stats={stats} />
+  // SCREEN 1: LANDING / WELCOME SCREEN
+  if (currentScreen === "WELCOME") {
+    return (
+      <div className="transition-opacity duration-300 ease-in-out">
+        <WelcomeScreen
+          stats={stats}
+          onStartPrep={() => setCurrentScreen("DASHBOARD")}
+        />
+      </div>
+    );
+  }
 
-      {/* SECTION 2: INTERACTIVE TAB NAVIGATION BAR */}
+  // SCREEN 2: MAIN DASHBOARD SCREEN
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white transition-opacity duration-300 ease-in-out">
+      
+      {/* SCREEN 2 HEADER WITH BACK BUTTON */}
+      <HeaderBar
+        stats={stats}
+        onBackToWelcome={() => setCurrentScreen("WELCOME")}
+      />
+
+      {/* INTERACTIVE TAB NAVIGATION BAR */}
       <NavigationBar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -204,7 +224,7 @@ export default function App() {
         weakTopicsCount={weakTopics.length}
       />
 
-      {/* ACTION BUTTONS (ALWAYS ACCESSIBLE IN PREP / FULL / SUBJECTS VIEW) */}
+      {/* ACTION BUTTONS (ACCESSIBLE IN PREP / FULL / SUBJECTS VIEW) */}
       {(activeTab === "PREP" || activeTab === "FULL" || activeTab === "SUBJECTS") && (
         <ActionButtonsRow
           onSaveProgress={handleSaveProgress}
