@@ -82,7 +82,7 @@ export const exportToCSV = (syllabus, attemptsLog = []) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `GATE_2028_Study_Tracker_Export_${new Date().toISOString().split("T")[0]}.csv`);
+  link.setAttribute("download", `GATE_Command_Center_2028_Export_${new Date().toISOString().split("T")[0]}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

@@ -246,7 +246,7 @@ export default function App() {
 
       {/* FOOTER */}
       <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-        <p>GATE CS+DA 2028 Study Tracker • Target Exam: February 2028</p>
+        <p>GATE Command Center 2028 • CS + DA Dual Stream • Target Exam: February 2028</p>
         <p className="mt-1">All data auto-saved to browser local storage and Google Sheets integration.</p>
       </footer>
 

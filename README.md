@@ -1,4 +1,4 @@
-# 🎓 GATE 2028 Interactive Study Tracker & Timeline Optimizer
+# 🎓 GATE Command Center 2028 — Ultimate CS + DA Prep & Target Scheduler
 
 An interactive web application for tracking, analyzing, and optimizing GATE 2028 preparation across Computer Science (CS) and Data Science & AI (DA) streams.
 

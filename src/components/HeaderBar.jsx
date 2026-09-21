@@ -14,14 +14,14 @@ export const HeaderBar = ({ stats }) => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-brown-950">
-                GATE CS+DA 2028 — Study Tracker
+                GATE Command Center 2028
               </h1>
               <span className="bg-brown-800 text-brown-50 text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
-                Dual Stream
+                CS + DA Dual Stream
               </span>
             </div>
             <p className="text-xs sm:text-sm text-brown-700 font-medium mt-0.5">
-              Target: Feb 2028 · Track every topic, revision & question
+              Target: Feb 2028 · Ultimate Syllabus Breakdown, Minimum Benchmarks & Schedule Planner
             </p>
           </div>
         </div>
