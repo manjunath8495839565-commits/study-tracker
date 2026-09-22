@@ -133,10 +133,10 @@ export const getTodaysTasksList = (syllabus, customTasks = []) => {
   });
 
   const monthOrder = {
-    "Aug 2026": 1, "Sep 2026": 2, "Oct 2026": 3, "Nov 2026": 4, "Dec 2026": 5,
-    "Jan 2027": 6, "Feb 2027": 7, "Mar 2027": 8, "Apr 2027": 9, "May 2027": 10,
-    "Jun 2027": 11, "Jul 2027": 12, "Aug 2027": 13, "Sep 2027": 14, "Oct 2027": 15,
-    "Nov 2027": 16, "Dec 2027": 17
+    "Sep 2026": 1, "Oct 2026": 2, "Nov 2026": 3, "Dec 2026": 4,
+    "Jan 2027": 5, "Feb 2027": 6, "Mar 2027": 7, "Apr 2027": 8, "May 2027": 9,
+    "Jun 2027": 10, "Jul 2027": 11, "Aug 2027": 12, "Sep 2027": 13, "Oct 2027": 14,
+    "Nov 2027": 15, "Dec 2027": 16, "Jan 2028": 17
   };
 
   const activeSubjects = [...syllabus]
@@ -199,7 +199,7 @@ export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, to
   const hoursSpent = topic.tasks?.[0]?.hoursSpent || 0;
   
   let targetYear = 2026;
-  let monthIdx = 7;
+  let monthIdx = 8; // Sep (0-indexed)
   
   if (targetMonthStr) {
     const parts = targetMonthStr.split(" ");
@@ -212,10 +212,19 @@ export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, to
     }
   }
 
-  const totalDaysInMonth = 28;
-  const dayOffset = Math.max(1, Math.min(totalDaysInMonth, Math.round(((topicIndex + 1) / Math.max(1, totalTopicsInSubject)) * totalDaysInMonth)));
+  let startDay = 1;
+  let maxDaysInMonth = 28;
+
+  // If target month is Sep 2026 (the start of syllabus), start tasks from tomorrow (23 Sep 2026)
+  if (targetYear === 2026 && monthIdx === 8) {
+    startDay = 23;
+    maxDaysInMonth = 30;
+  }
+
+  const dayRange = Math.max(0, maxDaysInMonth - startDay);
+  const dayOffset = Math.round(startDay + (totalTopicsInSubject > 1 ? (topicIndex / (totalTopicsInSubject - 1)) * dayRange : 0));
   
-  const bestTargetDate = new Date(targetYear, monthIdx, dayOffset);
+  const bestTargetDate = new Date(targetYear, monthIdx, Math.min(maxDaysInMonth, Math.max(startDay, dayOffset)));
   const today = new Date();
   
   const daysUntilTarget = Math.ceil((bestTargetDate.getTime() - today.getTime()) / (1000 * 3600 * 24));

@@ -12,7 +12,22 @@ export const getStoredState = () => {
     if (!parsed.syllabus || parsed.syllabus.length < initial.length) {
       return getDefaultState();
     }
-    return parsed;
+
+    const updatedSyllabus = parsed.syllabus.map(sub => {
+      const freshSub = initial.find(s => s.id === sub.id);
+      if (freshSub) {
+        return {
+          ...sub,
+          targetMonth: freshSub.targetMonth
+        };
+      }
+      return sub;
+    });
+
+    return {
+      ...parsed,
+      syllabus: updatedSyllabus
+    };
   } catch (err) {
     console.error("Failed to parse local storage state, resetting to initial:", err);
     return getDefaultState();

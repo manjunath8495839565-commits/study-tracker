@@ -1,8 +1,8 @@
 export const MONTHS_SCHEDULE = [
-  "Aug 2026", "Sep 2026", "Oct 2026", "Nov 2026", "Dec 2026",
+  "Sep 2026", "Oct 2026", "Nov 2026", "Dec 2026",
   "Jan 2027", "Feb 2027", "Mar 2027", "Apr 2027", "May 2027",
   "Jun 2027", "Jul 2027", "Aug 2027", "Sep 2027", "Oct 2027",
-  "Nov 2027", "Dec 2027"
+  "Nov 2027", "Dec 2027", "Jan 2028"
 ];
 
 export const generateTopicTasks = (subjectId, topicId, topicName, size = "medium") => {
@@ -48,7 +48,7 @@ export const RAW_SYLLABUS = [
     id: "cs-1",
     name: "Engineering Mathematics — Discrete Math",
     stream: "CS",
-    targetMonth: "Aug 2026",
+    targetMonth: "Sep 2026",
     topics: [
       { id: "dm-1", name: "Mathematical Logic & Propositional Calculus", size: "medium" },
       { id: "dm-2", name: "Set Theory, Relations & Equivalence Classes", size: "medium" },
@@ -69,7 +69,7 @@ export const RAW_SYLLABUS = [
     id: "cs-2",
     name: "Digital Logic",
     stream: "CS",
-    targetMonth: "Sep 2026",
+    targetMonth: "Oct 2026",
     topics: [
       { id: "dl-1", name: "Boolean Algebra, Logic Gates & canonical forms", size: "small" },
       { id: "dl-2", name: "Karnaugh Maps (K-Maps) & Boolean Minimization", size: "medium" },
@@ -84,7 +84,7 @@ export const RAW_SYLLABUS = [
     id: "cs-3",
     name: "Computer Organization & Architecture",
     stream: "CS",
-    targetMonth: "Oct 2026",
+    targetMonth: "Nov 2026",
     topics: [
       { id: "coa-1", name: "Machine Instructions & Addressing Modes", size: "medium" },
       { id: "coa-2", name: "ALU, Data Path & Control Unit (Hardwired & Microprogrammed)", size: "large" },
@@ -99,7 +99,7 @@ export const RAW_SYLLABUS = [
     id: "cs-4",
     name: "Programming & Data Structures",
     stream: "CS",
-    targetMonth: "Nov 2026",
+    targetMonth: "Dec 2026",
     topics: [
       { id: "pds-1", name: "C Programming — Data Types, Operators & Control Flow", size: "medium" },
       { id: "pds-2", name: "Functions, Scope, Parameter Passing & Recursion Analysis", size: "large" },
@@ -116,7 +116,7 @@ export const RAW_SYLLABUS = [
     id: "cs-5",
     name: "Algorithms",
     stream: "CS",
-    targetMonth: "Dec 2026",
+    targetMonth: "Jan 2027",
     topics: [
       { id: "algo-1", name: "Asymptotic Notation & Recurrence Relations (Master Theorem)", size: "medium" },
       { id: "algo-2", name: "Searching Algorithms (Linear, Binary & Search Variations)", size: "small" },
@@ -134,7 +134,7 @@ export const RAW_SYLLABUS = [
     id: "cs-6",
     name: "Theory of Computation",
     stream: "CS",
-    targetMonth: "Jan 2027",
+    targetMonth: "Feb 2027",
     topics: [
       { id: "toc-1", name: "Finite Automata (DFA, NFA, NFA to DFA Conversion & Minimization)", size: "large" },
       { id: "toc-2", name: "Regular Expressions, Regular Languages & Closure Properties", size: "medium" },
@@ -150,7 +150,7 @@ export const RAW_SYLLABUS = [
     id: "cs-7",
     name: "Compiler Design",
     stream: "CS",
-    targetMonth: "Feb 2027",
+    targetMonth: "Mar 2027",
     topics: [
       { id: "cd-1", name: "Lexical Analysis & Token Generation (Lex)", size: "small" },
       { id: "cd-2", name: "Syntax Analysis — Top-Down Parsing (LL(1), Recursive Descent)", size: "large" },
@@ -165,7 +165,7 @@ export const RAW_SYLLABUS = [
     id: "cs-8",
     name: "Operating System",
     stream: "CS",
-    targetMonth: "Mar 2027",
+    targetMonth: "Apr 2027",
     topics: [
       { id: "os-1", name: "Process Concept, Process States & Threads (User/Kernel)", size: "medium" },
       { id: "os-2", name: "CPU Scheduling Algorithms (FCFS, SJF, SRTF, RR, Priority)", size: "large" },
@@ -181,7 +181,7 @@ export const RAW_SYLLABUS = [
     id: "cs-9",
     name: "Databases (DBMS)",
     stream: "CS",
-    targetMonth: "Apr 2027",
+    targetMonth: "May 2027",
     topics: [
       { id: "dbms-1", name: "ER-Model, Entity Sets, Attributes & Key Constraints", size: "medium" },
       { id: "dbms-2", name: "Relational Model & Relational Algebra (Select, Project, Join, Division)", size: "large" },
@@ -197,7 +197,7 @@ export const RAW_SYLLABUS = [
     id: "cs-10",
     name: "Computer Networks",
     stream: "CS",
-    targetMonth: "May 2027",
+    targetMonth: "Jun 2027",
     topics: [
       { id: "cn-1", name: "ISO/OSI & TCP/IP Layering Models & Throughput Calculations", size: "medium" },
       { id: "cn-2", name: "Data Link Layer — Framing, Error Control (CRC, Hamming) & Flow Control (Stop-and-Wait, Go-Back-N, Selective Repeat)", size: "large" },
@@ -212,7 +212,7 @@ export const RAW_SYLLABUS = [
     id: "cs-11",
     name: "Software Engineering",
     stream: "CS",
-    targetMonth: "Jun 2027",
+    targetMonth: "Jul 2027",
     topics: [
       { id: "se-1", name: "SDLC Models — Waterfall, Agile, Spiral & Incremental", size: "medium" },
       { id: "se-2", name: "Requirements Engineering & SRS Documentation", size: "small" },
@@ -224,7 +224,7 @@ export const RAW_SYLLABUS = [
     id: "cs-12",
     name: "General Aptitude",
     stream: "CS",
-    targetMonth: "Jul 2027",
+    targetMonth: "Aug 2027",
     topics: [
       { id: "ga-1", name: "Verbal Ability — English Grammar, Vocabulary & Reading Comprehension", size: "medium" },
       { id: "ga-2", name: "Quantitative Aptitude — Ratios, Percentages, Profit/Loss, Time & Work", size: "large" },
@@ -239,7 +239,7 @@ export const RAW_SYLLABUS = [
     id: "da-13",
     name: "Probability & Statistics (DA Depth)",
     stream: "DA",
-    targetMonth: "Aug 2027",
+    targetMonth: "Sep 2027",
     topics: [
       { id: "daps-1", name: "Joint, Marginal & Conditional Probability Distributions", size: "large" },
       { id: "daps-2", name: "Covariance, Correlation & Expectation Properties", size: "medium" },
@@ -253,7 +253,7 @@ export const RAW_SYLLABUS = [
     id: "da-14",
     name: "Linear Algebra (DA Depth)",
     stream: "DA",
-    targetMonth: "Aug 2027",
+    targetMonth: "Sep 2027",
     topics: [
       { id: "dala-1", name: "Vector Spaces, Subspaces & Basis Sets", size: "medium" },
       { id: "dala-2", name: "Linear Transformations, Rank-Nullity Theorem & Change of Basis", size: "large" },
@@ -266,7 +266,7 @@ export const RAW_SYLLABUS = [
     id: "da-15",
     name: "Calculus & Optimization",
     stream: "DA",
-    targetMonth: "Sep 2027",
+    targetMonth: "Oct 2027",
     topics: [
       { id: "daco-1", name: "Multivariate Calculus — Partial Derivatives, Gradient & Hessian", size: "medium" },
       { id: "daco-2", name: "Unconstrained Optimization & Gradient Descent Variants", size: "large" },
@@ -278,7 +278,7 @@ export const RAW_SYLLABUS = [
     id: "da-16",
     name: "Programming, Data Structures & Algorithms (Python)",
     stream: "DA",
-    targetMonth: "Sep 2027",
+    targetMonth: "Oct 2027",
     topics: [
       { id: "dapy-1", name: "Python Core Data Structures (Lists, Dicts, Sets, Tuples, Comprehensions)", size: "medium" },
       { id: "dapy-2", name: "Object-Oriented Programming in Python & Exception Handling", size: "medium" },
@@ -290,7 +290,7 @@ export const RAW_SYLLABUS = [
     id: "da-17",
     name: "Database Management & Warehousing",
     stream: "DA",
-    targetMonth: "Oct 2027",
+    targetMonth: "Nov 2027",
     topics: [
       { id: "dadb-1", name: "Advanced SQL Queries & Window Functions for Data Analysis", size: "large" },
       { id: "dadb-2", name: "Data Warehousing Architecture & Dimensional Modeling", size: "medium" },
@@ -302,7 +302,7 @@ export const RAW_SYLLABUS = [
     id: "da-18",
     name: "Machine Learning",
     stream: "DA",
-    targetMonth: "Oct 2027",
+    targetMonth: "Nov 2027",
     topics: [
       { id: "daml-1", name: "Supervised Learning — Linear & Logistic Regression, Regularization (L1/L2)", size: "large" },
       { id: "daml-2", name: "Decision Trees, Random Forests & Boosting (XGBoost/AdaBoost)", size: "large" },
@@ -317,7 +317,7 @@ export const RAW_SYLLABUS = [
     id: "da-19",
     name: "Artificial Intelligence",
     stream: "DA",
-    targetMonth: "Nov 2027",
+    targetMonth: "Dec 2027",
     topics: [
       { id: "daai-1", name: "Uninformed & Informed Search Strategies (BFS, DFS, A*, Heuristics)", size: "large" },
       { id: "daai-2", name: "Adversarial Search & Minimax with Alpha-Beta Pruning", size: "medium" },
@@ -330,7 +330,7 @@ export const RAW_SYLLABUS = [
     id: "da-20",
     name: "Data Science Fundamentals",
     stream: "DA",
-    targetMonth: "Dec 2027",
+    targetMonth: "Jan 2028",
     topics: [
       { id: "dads-1", name: "Data Handling, Cleaning & Missing Value Imputation", size: "medium" },
       { id: "dads-2", name: "Exploratory Data Analysis (EDA) & Summary Statistics", size: "medium" },
