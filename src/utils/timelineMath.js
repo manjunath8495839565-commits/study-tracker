@@ -194,7 +194,19 @@ export const getTopicBenchmarkHours = (size = "medium") => {
   return 10;
 };
 
-export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, totalTopicsInSubject = 1) => {
+export const getTopicDaysAllocation = (size = "medium") => {
+  if (size === "small") return 2;  // 1-2 days range
+  if (size === "large") return 4;  // 2-4 days range
+  return 3;                        // 2-3 days range
+};
+
+export const getTopicDurationRangeText = (size = "medium") => {
+  if (size === "small") return "1-2 days";
+  if (size === "large") return "2-4 days";
+  return "2-3 days";
+};
+
+export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, totalTopicsInSubject = 1, allSubjectTopics = []) => {
   const minHours = topic.minHours || getTopicBenchmarkHours(topic.size);
   const hoursSpent = topic.tasks?.[0]?.hoursSpent || 0;
   
@@ -212,19 +224,32 @@ export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, to
     }
   }
 
-  let startDay = 1;
-  let maxDaysInMonth = 28;
-
-  // If target month is Sep 2026 (the start of syllabus), start tasks from tomorrow (23 Sep 2026)
+  // Determine starting date for subject
+  let startDate;
   if (targetYear === 2026 && monthIdx === 8) {
-    startDay = 23;
-    maxDaysInMonth = 30;
+    // Starting month Sep 2026 starts from tomorrow 23 Sep 2026
+    startDate = new Date(2026, 8, 23);
+  } else {
+    // Other target months start on 1st of that month
+    startDate = new Date(targetYear, monthIdx, 1);
   }
 
-  const dayRange = Math.max(0, maxDaysInMonth - startDay);
-  const dayOffset = Math.round(startDay + (totalTopicsInSubject > 1 ? (topicIndex / (totalTopicsInSubject - 1)) * dayRange : 0));
-  
-  const bestTargetDate = new Date(targetYear, monthIdx, Math.min(maxDaysInMonth, Math.max(startDay, dayOffset)));
+  // Calculate cumulative days for topics up to topicIndex
+  let cumulativeDays = 0;
+  if (allSubjectTopics && allSubjectTopics.length > 0) {
+    for (let i = 0; i <= topicIndex && i < allSubjectTopics.length; i++) {
+      cumulativeDays += getTopicDaysAllocation(allSubjectTopics[i].size);
+    }
+  } else {
+    cumulativeDays = (topicIndex + 1) * getTopicDaysAllocation(topic.size);
+  }
+
+  const allocatedDays = getTopicDaysAllocation(topic.size);
+  const durationRange = getTopicDurationRangeText(topic.size);
+
+  const bestTargetDate = new Date(startDate);
+  bestTargetDate.setDate(startDate.getDate() + cumulativeDays);
+
   const today = new Date();
   
   const daysUntilTarget = Math.ceil((bestTargetDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
@@ -252,6 +277,8 @@ export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, to
     formattedTargetDate,
     daysUntilTarget,
     daysUntilExam,
-    recommendedDailyPace
+    recommendedDailyPace,
+    allocatedDays,
+    durationRange
   };
 };

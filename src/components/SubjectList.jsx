@@ -183,7 +183,7 @@ export const SubjectList = ({
                             statusText = "In Progress";
                           }
 
-                          const schedule = calculateTopicSchedule(topic, subject.targetMonth, topicIdx, subject.topics.length);
+                          const schedule = calculateTopicSchedule(topic, subject.targetMonth, topicIdx, subject.topics.length, subject.topics);
 
                           return (
                             <div
@@ -208,8 +208,8 @@ export const SubjectList = ({
                                   </div>
 
                                   <div className="flex items-center gap-2 text-xs text-brown-700 pl-4 flex-wrap">
-                                    <span className="capitalize text-brown-900 bg-brown-100 px-2 py-0.5 rounded text-[11px] font-bold border border-brown-200 shadow-2xs">
-                                      {topic.size} topic
+                                    <span className="capitalize text-brown-900 bg-brown-100 px-2 py-0.5 rounded text-[11px] font-bold border border-brown-200 shadow-2xs" title={`Pacing Benchmark: ${schedule.durationRange} (${schedule.allocatedDays} days allocated)`}>
+                                      {topic.size} topic ({schedule.durationRange})
                                     </span>
                                     <span>•</span>
                                     <span className={isFullyDone ? "text-emerald-700 font-bold" : "font-medium"}>
