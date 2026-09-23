@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Target, Sparkles, ArrowRight, AlertTriangle, Calendar, Clock, CheckCircle2, User } from "lucide-react";
 
-export const Screen1Setup = ({ onGeneratePlan, onOpenInstallModal }) => {
-  const [name, setName] = useState("");
-  const [targetYear, setTargetYear] = useState("");
-  const [now] = useState(() => new Date());
+export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGeneratePlan, onOpenInstallModal }) => {
+  const [name, setName] = useState(() => initialName || "");
+  const [targetYear, setTargetYear] = useState(() => initialTargetYear || "");
 
   const isValidName = name.trim().length > 0;
   const isValidYear = !!targetYear;
