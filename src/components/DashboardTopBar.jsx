@@ -1,17 +1,24 @@
 import React from "react";
-import { ArrowLeft, Smartphone, Settings } from "lucide-react";
+import { ArrowLeft, Smartphone, Settings, Target } from "lucide-react";
 
-export const DashboardTopBar = ({ onBackToWelcome, onOpenInstallModal, onOpenNotifSettings }) => {
+export const DashboardTopBar = ({ studyPlan, onBackToStats, onOpenInstallModal, onOpenNotifSettings }) => {
   return (
     <div className="bg-white border-b border-brown-200/80 py-2.5 px-4 sm:px-6 lg:px-8 shadow-xs">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <button
-          onClick={onBackToWelcome}
+          onClick={onBackToStats}
           className="px-3.5 py-1.5 bg-brown-100 hover:bg-brown-200 text-brown-950 border border-brown-300 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 shadow-2xs group"
         >
           <ArrowLeft className="w-4 h-4 text-brown-800 group-hover:-translate-x-1 transition-transform" />
-          <span>← Back to Welcome Screen</span>
+          <span>← Stats Overview</span>
         </button>
+
+        {studyPlan && (
+          <div className="hidden md:flex items-center gap-2 text-xs font-extrabold text-brown-900 bg-brown-50 px-3 py-1 rounded-xl border border-brown-200">
+            <Target className="w-3.5 h-3.5 text-amber-700" />
+            <span>GATE Command Center • Target: GATE {studyPlan.targetYear} ({studyPlan.name})</span>
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           {onOpenNotifSettings && (

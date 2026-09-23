@@ -1,13 +1,14 @@
 import React from "react";
-import { Calculator, Calendar, TrendingUp, AlertTriangle, CheckCircle, Flame } from "lucide-react";
-import { computeTimelineProjection } from "../utils/timelineMath";
+import { Calculator, Calendar, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
+import { computeTimelineProjection, groupTasksByMonth } from "../utils/timelineMath";
 
 export const TimelineCalculator = ({
-  syllabus,
+  studyPlan,
   dailyGoalPace,
   onChangePace
 }) => {
-  const projection = computeTimelineProjection(syllabus, dailyGoalPace);
+  const projection = computeTimelineProjection(studyPlan, dailyGoalPace);
+  const monthlyGroups = groupTasksByMonth(studyPlan);
 
   const formattedFinishDate = projection.projectedFinishDate.toLocaleDateString("en-US", {
     month: "short",
@@ -15,23 +16,26 @@ export const TimelineCalculator = ({
     year: "numeric"
   });
 
+  const formattedTargetDeadline = projection.targetMonthLabel || "Exam Date";
+
   return (
     <div className="py-6 border-t border-brown-200 bg-white/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calculator className="w-5 h-5 text-brown-800" />
             <h2 className="text-lg font-extrabold text-brown-950">
               Completion Timeline & Velocity Calculator
             </h2>
           </div>
-          <span className="bg-brown-100 text-brown-900 border border-brown-300 text-xs px-2.5 py-1 rounded-full font-bold">
-            Target Completion: Dec 31, 2027
+          <span className="bg-brown-100 text-brown-900 border border-brown-300 text-xs px-3 py-1 rounded-full font-extrabold shadow-2xs">
+            Revision Start Goal: {formattedTargetDeadline}
           </span>
         </div>
 
+        {/* Projection Dashboard Cards */}
         <div className="bg-white border border-brown-200 rounded-2xl p-5 sm:p-6 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           
           {/* Left Column: Input Box */}
@@ -50,16 +54,16 @@ export const TimelineCalculator = ({
               />
               <div>
                 <span className="text-sm font-bold text-brown-950 block">tasks / day</span>
-                <span className="text-xs text-brown-600 font-medium">Adjust to calculate projection</span>
+                <span className="text-xs text-brown-600 font-medium">Adjust to recalculate projection</span>
               </div>
             </div>
             <div className="text-xs text-brown-700 border-t border-brown-200 pt-2.5 flex items-center justify-between font-medium">
-              <span>Remaining Tasks:</span>
+              <span>Remaining Incomplete Tasks:</span>
               <strong className="text-brown-950 font-bold">{projection.remainingTasks} tasks</strong>
             </div>
           </div>
 
-          {/* Right Column: Projection Dashboard */}
+          {/* Right Column: Projection Indicators */}
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Box 1: Projected Completion Date */}
@@ -99,8 +103,8 @@ export const TimelineCalculator = ({
               </div>
               <p className="text-[11px] text-stone-600 font-medium">
                 {projection.isAhead
-                  ? "On track! Jan-Feb 2028 is free for full mocks"
-                  : `Needs acceleration to finish by Dec 31, 2027`}
+                  ? "On track! Reserved revision window is protected."
+                  : `Needs acceleration to finish before revision phase.`}
               </p>
             </div>
 
@@ -114,15 +118,56 @@ export const TimelineCalculator = ({
                 {projection.requiredPace} <span className="text-xs font-normal text-brown-600">tasks/day</span>
               </div>
               <p className="text-[11px] text-brown-600 font-medium">
-                Days left until Dec 31: <strong className="text-brown-950">{projection.daysRemainingUntilTarget} days</strong>
+                Days left until revision phase: <strong className="text-brown-950">{projection.daysRemainingUntilTarget} days</strong>
               </p>
             </div>
 
           </div>
 
         </div>
+
+        {/* MONTHLY BREAKDOWN GRID */}
+        <div className="bg-white border border-brown-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-brown-200 pb-3">
+            <h3 className="text-base font-extrabold text-brown-950 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-brown-800" />
+              <span>Monthly Schedule Breakdown & Velocity Progress</span>
+            </h3>
+            <span className="text-xs text-brown-700 font-bold">
+              {monthlyGroups.length} Scheduled Months
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {monthlyGroups.map((month) => (
+              <div
+                key={month.monthKey}
+                className="bg-brown-50/60 border border-brown-200 rounded-xl p-4 space-y-3 hover:border-brown-300 transition-all shadow-2xs"
+              >
+                <div className="flex items-center justify-between text-sm font-extrabold text-brown-950">
+                  <span>{month.label}</span>
+                  <span className="text-xs bg-white border border-brown-300 px-2 py-0.5 rounded-md text-brown-800">
+                    {month.completedTasks}/{month.totalTasks} Done ({month.percent}%)
+                  </span>
+                </div>
+
+                <div className="w-full h-2.5 bg-brown-200/60 rounded-full overflow-hidden border border-brown-300/60">
+                  <div
+                    className="h-full bg-gradient-to-r from-brown-700 via-amber-600 to-emerald-600 transition-all duration-500 rounded-full"
+                    style={{ width: `${month.percent}%` }}
+                  />
+                </div>
+
+                <div className="text-[11px] text-brown-700 font-medium flex justify-between">
+                  <span>Tasks: {month.totalTasks}</span>
+                  <span>{month.percent === 100 ? "Completed ✓" : "In Progress"}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
 };
-

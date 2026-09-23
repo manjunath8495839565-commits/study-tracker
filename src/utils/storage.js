@@ -1,77 +1,62 @@
-import { buildInitialSyllabusState } from "../data/syllabusData";
+const STORAGE_KEY = "GATE_COMMAND_CENTER_STUDY_PLAN_V2";
 
-const STORAGE_KEY = "GATE_2028_STUDY_TRACKER_V1";
-
-export const getStoredState = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return getDefaultState();
-    const parsed = JSON.parse(raw);
-    
-    const initial = buildInitialSyllabusState();
-    if (!parsed.syllabus || parsed.syllabus.length < initial.length) {
-      return getDefaultState();
-    }
-
-    const updatedSyllabus = parsed.syllabus.map(sub => {
-      const freshSub = initial.find(s => s.id === sub.id);
-      if (freshSub) {
-        return {
-          ...sub,
-          targetMonth: freshSub.targetMonth
-        };
-      }
-      return sub;
-    });
-
-    return {
-      ...parsed,
-      syllabus: updatedSyllabus
-    };
-  } catch (err) {
-    console.error("Failed to parse local storage state, resetting to initial:", err);
-    return getDefaultState();
-  }
-};
-
-export const getDefaultState = () => {
+/**
+ * Hydrates date strings back to JavaScript Date instances.
+ */
+const hydratePlanDates = (plan) => {
+  if (!plan) return null;
   return {
-    version: "1.0",
-    lastSaved: new Date().toISOString(),
-    dailyGoalPace: 3,
-    googleSheetUrl: "",
-    autoSyncEnabled: false,
-    streakData: {
-      currentStreak: 1,
-      lastActiveDate: new Date().toISOString().split("T")[0],
-      history: [new Date().toISOString().split("T")[0]]
-    },
-    attemptsLog: [],
-    customTasks: [],
-    syllabus: buildInitialSyllabusState()
+    ...plan,
+    examDate: new Date(plan.examDate),
+    startDate: new Date(plan.startDate),
+    generatedAt: new Date(plan.generatedAt),
+    tasks: (plan.tasks || []).map(task => ({
+      ...task,
+      date: new Date(task.date)
+    })),
+    deadlines: (plan.deadlines || []).map(dl => ({
+      ...dl,
+      deadlineDate: new Date(dl.deadlineDate)
+    }))
   };
 };
 
-export const saveStateToLocalStorage = (state) => {
+export const getStoredStudyPlan = () => {
   try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.tasks || !Array.isArray(parsed.tasks) || parsed.tasks.length === 0) {
+      return null;
+    }
+    return hydratePlanDates(parsed);
+  } catch (err) {
+    console.error("Failed to parse stored study plan:", err);
+    return null;
+  }
+};
+
+export const saveStudyPlanToStorage = (studyPlan) => {
+  try {
+    if (!studyPlan) return false;
     const payload = {
-      ...state,
+      ...studyPlan,
       lastSaved: new Date().toISOString()
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     return true;
   } catch (err) {
-    console.error("Failed to save state to localStorage:", err);
+    console.error("Failed to save study plan to localStorage:", err);
     return false;
   }
 };
 
-export const resetStoredState = () => {
+export const resetStoredStudyPlan = () => {
   try {
     localStorage.removeItem(STORAGE_KEY);
-    return getDefaultState();
+    return null;
   } catch (err) {
     console.error("Error clearing local storage:", err);
-    return getDefaultState();
+    return null;
   }
 };

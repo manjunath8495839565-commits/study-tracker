@@ -1,59 +1,73 @@
-export const TARGET_DATE = new Date("2027-12-31T23:59:59");
-export const GATE_EXAM_DATE = new Date("2028-02-05T09:00:00");
+/**
+ * Real Scheduling Engine & Math Utilities derived strictly from studyPlan state.
+ * Zero hardcoded dates, months, or years.
+ */
 
-export const computeOverallStats = (syllabus) => {
-  let totalTopics = 0;
-  let topicsDone = 0;
-  
-  let totalTasks = 0;
-  let completedTasks = 0;
-  
+export const getLocalYYYYMMDD = (date = new Date()) => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+export const computeOverallStats = (studyPlan) => {
+  if (!studyPlan || !studyPlan.tasks) {
+    return {
+      totalTopics: 132,
+      topicsDone: 0,
+      totalTasks: 528,
+      completedTasks: 0,
+      remainingTasks: 528,
+      totalQuestionsPracticed: 0,
+      totalStudyHours: 0,
+      totalRevisions: 0,
+      weakTopicsCount: 0,
+      overallPercentage: "0.0"
+    };
+  }
+
+  const tasks = studyPlan.tasks;
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.completed).length;
+
   let totalQuestionsPracticed = 0;
   let totalStudyHours = 0;
-  
   let totalRevisions = 0;
-  let weakTopicsCount = 0;
 
-  syllabus.forEach(subject => {
-    subject.topics.forEach(topic => {
-      totalTopics++;
-      
-      const topicTasks = topic.tasks || [];
-      const topicTasksDone = topicTasks.filter(t => t.completed).length;
-      
-      totalTasks += topicTasks.length;
-      completedTasks += topicTasksDone;
+  // Group by topicId to track topic completion
+  const topicMap = {};
+  const weakTopicsSet = new Set();
 
-      if (topicTasks.length > 0 && topicTasksDone === topicTasks.length) {
-        topicsDone++;
-      }
+  tasks.forEach(t => {
+    if (!topicMap[t.topicId]) {
+      topicMap[t.topicId] = [];
+    }
+    topicMap[t.topicId].push(t);
 
-      topicTasks.forEach(t => {
-        totalQuestionsPracticed += (t.questionsLogged || 0);
-        totalStudyHours += (t.hoursSpent || 0);
-        if (t.completed && (t.type === "revision" || t.type === "pyq" || t.type === "speed")) {
-          totalRevisions++;
-        }
-      });
+    totalQuestionsPracticed += (t.questionsLogged || 0);
+    totalStudyHours += (t.hoursSpent || 0);
 
-      if (topic.accuracy > 0 && topic.accuracy < 60) {
-        weakTopicsCount++;
-      }
-    });
+    if (t.completed && (t.type === "pyq" || t.status === "needs-revision")) {
+      totalRevisions++;
+    }
 
-    const masterTasks = subject.masterTasks || [];
-    totalTasks += masterTasks.length;
-    masterTasks.forEach(mt => {
-      if (mt.completed) {
-        completedTasks++;
-        if (mt.type === "master_revision" || mt.type === "master_mock") {
-          totalRevisions++;
-        }
-      }
-    });
+    if (t.status === "needs-revision") {
+      weakTopicsSet.add(t.topicId);
+    }
   });
 
-  const overallPercentage = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0.0";
+  const topicIds = Object.keys(topicMap);
+  const totalTopics = topicIds.length || 132;
+  
+  let topicsDone = 0;
+  topicIds.forEach(topicId => {
+    const topicTasks = topicMap[topicId];
+    if (topicTasks.length > 0 && topicTasks.every(tk => tk.completed)) {
+      topicsDone++;
+    }
+  });
+
+  const overallPercentage = ((topicsDone / totalTopics) * 100).toFixed(1);
 
   return {
     totalTopics,
@@ -64,221 +78,152 @@ export const computeOverallStats = (syllabus) => {
     totalQuestionsPracticed,
     totalStudyHours: Math.round(totalStudyHours * 10) / 10,
     totalRevisions,
-    weakTopicsCount,
+    weakTopicsCount: weakTopicsSet.size,
     overallPercentage
   };
 };
 
-export const computeTimelineProjection = (syllabus, dailyTaskRate = 3) => {
-  const stats = computeOverallStats(syllabus);
-  const remainingTasks = stats.remainingTasks;
+export const getTodaysTasksList = (studyPlan, customTasks = []) => {
+  if (!studyPlan || !studyPlan.tasks) return [];
 
-  const effectivePace = Math.max(0.5, Number(dailyTaskRate) || 3);
+  const todayStr = getLocalYYYYMMDD(new Date());
+
+  // 1. Filter tasks assigned for today
+  let todayTasks = studyPlan.tasks.filter(t => t.dateString === todayStr);
+
+  // 2. If no tasks exact for today, find active upcoming incomplete tasks sorted by sequence
+  if (todayTasks.length === 0) {
+    todayTasks = studyPlan.tasks
+      .filter(t => !t.completed)
+      .slice(0, 8);
+  }
+
+  // Combine custom tasks with priority studyPlan tasks
+  const formattedCustom = (customTasks || []).map(ct => ({ ...ct, isCustom: true }));
+  return [...formattedCustom, ...todayTasks];
+};
+
+export const getOngoingSubject = (studyPlan) => {
+  if (!studyPlan || !studyPlan.tasks) return null;
+
+  const todayStr = getLocalYYYYMMDD(new Date());
+  
+  // Find task for today, or first incomplete task
+  const currentTask = studyPlan.tasks.find(t => t.dateString === todayStr) || 
+                    studyPlan.tasks.find(t => !t.completed) ||
+                    studyPlan.tasks[0];
+
+  if (!currentTask) return null;
+
+  const subjectDeadline = (studyPlan.deadlines || []).find(d => d.subjectId === currentTask.subjectId);
+  const deadlineDate = subjectDeadline ? subjectDeadline.deadlineDate : currentTask.date;
+
+  const formattedMonth = deadlineDate.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+
+  return {
+    subjectId: currentTask.subjectId,
+    subjectName: currentTask.subjectName,
+    stream: currentTask.stream,
+    targetMonth: formattedMonth,
+    deadlineDate
+  };
+};
+
+export const groupTasksByMonth = (studyPlan) => {
+  if (!studyPlan || !studyPlan.tasks) return [];
+
+  const monthMap = {};
+
+  studyPlan.tasks.forEach(t => {
+    const d = new Date(t.date);
+    const year = d.getFullYear();
+    const month = d.getMonth(); // 0-indexed
+    const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+
+    if (!monthMap[monthKey]) {
+      monthMap[monthKey] = {
+        monthKey,
+        label,
+        year,
+        month,
+        tasks: [],
+        totalTasks: 0,
+        completedTasks: 0
+      };
+    }
+
+    monthMap[monthKey].tasks.push(t);
+    monthMap[monthKey].totalTasks++;
+    if (t.completed) {
+      monthMap[monthKey].completedTasks++;
+    }
+  });
+
+  const sortedMonths = Object.values(monthMap).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+
+  return sortedMonths.map(m => ({
+    ...m,
+    percent: m.totalTasks > 0 ? Math.round((m.completedTasks / m.totalTasks) * 100) : 0
+  }));
+};
+
+export const computeTimelineProjection = (studyPlan, dailyGoalPace = 3) => {
+  if (!studyPlan || !studyPlan.tasks) {
+    return {
+      remainingTasks: 0,
+      daysNeeded: 0,
+      projectedFinishDate: new Date(),
+      daysRemainingUntilTarget: 0,
+      daysDifference: 0,
+      isAhead: true,
+      daysAheadOrBehind: 0,
+      requiredPace: "0.0",
+      daysUntilExam: 0
+    };
+  }
+
+  const tasks = studyPlan.tasks;
+  const remainingTasks = tasks.filter(t => !t.completed).length;
+  const effectivePace = Math.max(0.5, Number(dailyGoalPace) || 3);
   
   const daysNeeded = Math.ceil(remainingTasks / effectivePace);
-  
+
   const today = new Date();
-  const projectedFinishDate = new Date();
-  projectedFinishDate.setDate(today.getDate() + daysNeeded);
+  today.setHours(0, 0, 0, 0);
 
-  const timeDiffToTarget = TARGET_DATE.getTime() - today.getTime();
-  const daysRemainingUntilTarget = Math.max(1, Math.ceil(timeDiffToTarget / (1000 * 3600 * 24)));
+  const projectedFinishDate = new Date(today.getTime() + daysNeeded * 24 * 60 * 60 * 1000);
 
-  const daysDifference = daysRemainingUntilTarget - daysNeeded;
+  const examDate = new Date(studyPlan.examDate);
+  const reservedDays = studyPlan.reservedRevisionDays || 30;
   
-  const requiredPace = (remainingTasks / daysRemainingUntilTarget).toFixed(1);
+  // Date when syllabus coverage must end before full mock/revision phase
+  const revisionStartDate = new Date(examDate.getTime() - reservedDays * 24 * 60 * 60 * 1000);
 
-  const timeDiffToExam = GATE_EXAM_DATE.getTime() - today.getTime();
-  const daysUntilExam = Math.max(0, Math.ceil(timeDiffToExam / (1000 * 3600 * 24)));
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysRemainingUntilRevision = Math.max(1, Math.ceil((revisionStartDate.getTime() - today.getTime()) / msPerDay));
+  const daysUntilExam = Math.max(0, Math.ceil((examDate.getTime() - today.getTime()) / msPerDay));
+
+  const daysDifference = daysRemainingUntilRevision - daysNeeded;
+  const isAhead = daysDifference >= 0;
+  const requiredPace = (remainingTasks / daysRemainingUntilRevision).toFixed(1);
 
   return {
     remainingTasks,
     daysNeeded,
     projectedFinishDate,
-    daysRemainingUntilTarget,
+    revisionStartDate,
+    daysRemainingUntilTarget: daysRemainingUntilRevision,
     daysDifference,
-    isAhead: daysDifference >= 0,
+    isAhead,
     daysAheadOrBehind: Math.abs(daysDifference),
     requiredPace,
-    daysUntilExam
-  };
-};
-
-export const getWeakTopicsList = (syllabus) => {
-  const weakTopics = [];
-  syllabus.forEach(subject => {
-    subject.topics.forEach(topic => {
-      if (topic.accuracy > 0 && topic.accuracy < 60) {
-        weakTopics.push({
-          subjectId: subject.id,
-          subjectName: subject.name,
-          topicId: topic.id,
-          topicName: topic.name,
-          accuracy: topic.accuracy
-        });
-      }
-    });
-  });
-  return weakTopics;
-};
-
-export const getTodaysTasksList = (syllabus, customTasks = []) => {
-  const todaysTasks = [];
-  
-  customTasks.forEach(ct => {
-    todaysTasks.push({
-      ...ct,
-      isCustom: true
-    });
-  });
-
-  const monthOrder = {
-    "Sep 2026": 1, "Oct 2026": 2, "Nov 2026": 3, "Dec 2026": 4,
-    "Jan 2027": 5, "Feb 2027": 6, "Mar 2027": 7, "Apr 2027": 8, "May 2027": 9,
-    "Jun 2027": 10, "Jul 2027": 11, "Aug 2027": 12, "Sep 2027": 13, "Oct 2027": 14,
-    "Nov 2027": 15, "Dec 2027": 16, "Jan 2028": 17
-  };
-
-  const activeSubjects = [...syllabus]
-    .filter(subject => {
-      const topicTasksPending = (subject.topics || []).some(t => (t.tasks || []).some(tk => !tk.completed));
-      const masterTasksPending = (subject.masterTasks || []).some(mt => !mt.completed);
-      return topicTasksPending || masterTasksPending;
-    })
-    .sort((a, b) => {
-      const orderA = monthOrder[a.targetMonth] || 99;
-      const orderB = monthOrder[b.targetMonth] || 99;
-      return orderA - orderB;
-    });
-
-  let candidateTasks = [];
-
-  activeSubjects.forEach(subject => {
-    (subject.topics || []).forEach(topic => {
-      (topic.tasks || []).forEach(task => {
-        if (!task.completed) {
-          candidateTasks.push({
-            ...task,
-            subjectId: subject.id,
-            subjectName: subject.name,
-            topicId: topic.id,
-            topicName: topic.name,
-            accuracy: topic.accuracy,
-            targetMonth: subject.targetMonth
-          });
-        }
-      });
-    });
-
-    (subject.masterTasks || []).forEach(mt => {
-      if (!mt.completed) {
-        candidateTasks.push({
-          ...mt,
-          subjectId: subject.id,
-          subjectName: subject.name,
-          topicId: "MASTER",
-          topicName: "Master Subject Milestone",
-          isMaster: true,
-          targetMonth: subject.targetMonth
-        });
-      }
-    });
-  });
-
-  return [...todaysTasks, ...candidateTasks.slice(0, 8)];
-};
-
-export const getTopicBenchmarkHours = (size = "medium") => {
-  if (size === "small") return 4;
-  if (size === "large") return 20;
-  return 10;
-};
-
-export const getTopicDaysAllocation = (size = "medium") => {
-  if (size === "small") return 2;  // 1-2 days range
-  if (size === "large") return 4;  // 2-4 days range
-  return 3;                        // 2-3 days range
-};
-
-export const getTopicDurationRangeText = (size = "medium") => {
-  if (size === "small") return "1-2 days";
-  if (size === "large") return "2-4 days";
-  return "2-3 days";
-};
-
-export const calculateTopicSchedule = (topic, targetMonthStr, topicIndex = 0, totalTopicsInSubject = 1, allSubjectTopics = []) => {
-  const minHours = topic.minHours || getTopicBenchmarkHours(topic.size);
-  const hoursSpent = topic.tasks?.[0]?.hoursSpent || 0;
-  
-  let targetYear = 2026;
-  let monthIdx = 8; // Sep (0-indexed)
-  
-  if (targetMonthStr) {
-    const parts = targetMonthStr.split(" ");
-    if (parts.length === 2) {
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      const mFound = monthNames.indexOf(parts[0]);
-      if (mFound !== -1) monthIdx = mFound;
-      const yFound = parseInt(parts[1], 10);
-      if (!isNaN(yFound)) targetYear = yFound;
-    }
-  }
-
-  // Determine starting date for subject
-  let startDate;
-  if (targetYear === 2026 && monthIdx === 8) {
-    // Starting month Sep 2026 starts from tomorrow 23 Sep 2026
-    startDate = new Date(2026, 8, 23);
-  } else {
-    // Other target months start on 1st of that month
-    startDate = new Date(targetYear, monthIdx, 1);
-  }
-
-  // Calculate cumulative days for topics up to topicIndex
-  let cumulativeDays = 0;
-  if (allSubjectTopics && allSubjectTopics.length > 0) {
-    for (let i = 0; i <= topicIndex && i < allSubjectTopics.length; i++) {
-      cumulativeDays += getTopicDaysAllocation(allSubjectTopics[i].size);
-    }
-  } else {
-    cumulativeDays = (topicIndex + 1) * getTopicDaysAllocation(topic.size);
-  }
-
-  const allocatedDays = getTopicDaysAllocation(topic.size);
-  const durationRange = getTopicDurationRangeText(topic.size);
-
-  const bestTargetDate = new Date(startDate);
-  bestTargetDate.setDate(startDate.getDate() + cumulativeDays);
-
-  const today = new Date();
-  
-  const daysUntilTarget = Math.ceil((bestTargetDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-  const daysUntilExam = Math.max(0, Math.ceil((GATE_EXAM_DATE.getTime() - today.getTime()) / (1000 * 3600 * 24)));
-
-  const isMinHoursMet = hoursSpent >= minHours;
-  const hoursRemaining = Math.max(0, minHours - hoursSpent);
-  const percentMinHoursDone = Math.min(100, Math.round((hoursSpent / minHours) * 100));
-
-  const recommendedDailyPace = minHours <= 4 ? "1.0 - 1.5 h/day" : minHours <= 10 ? "1.5 - 2.0 h/day" : "2.0 - 3.0 h/day";
-
-  const formattedTargetDate = bestTargetDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
-
-  return {
-    minHours,
-    hoursSpent,
-    hoursRemaining,
-    percentMinHoursDone,
-    isMinHoursMet,
-    bestTargetDate,
-    formattedTargetDate,
-    daysUntilTarget,
     daysUntilExam,
-    recommendedDailyPace,
-    allocatedDays,
-    durationRange
+    targetMonthLabel: revisionStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
   };
+};
+
+export const getWeakTasksList = (studyPlan) => {
+  if (!studyPlan || !studyPlan.tasks) return [];
+  return studyPlan.tasks.filter(t => t.status === "needs-revision");
 };

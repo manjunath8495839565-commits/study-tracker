@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Screen1Setup } from "./components/Screen1Setup";
+import { Screen2Stats } from "./components/Screen2Stats";
 import { DashboardTopBar } from "./components/DashboardTopBar";
 import { NavigationBar } from "./components/NavigationBar";
 import { SubjectFilterRow } from "./components/SubjectFilterRow";
@@ -7,23 +9,33 @@ import { SubjectList } from "./components/SubjectList";
 import { TimelineCalculator } from "./components/TimelineCalculator";
 import { TodaysTasksPanel } from "./components/TodaysTasksPanel";
 import { WeakTopicAnalytics } from "./components/WeakTopicAnalytics";
-import { WelcomeScreen } from "./components/WelcomeScreen";
 import { GoogleSheetsModal } from "./components/GoogleSheetsModal";
 import { ResetModal } from "./components/ResetModal";
 import { InstallAppModal } from "./components/InstallAppModal";
 import { BrowserPermissionPrompt } from "./components/BrowserPermissionPrompt";
 
-import { getStoredState, saveStateToLocalStorage, resetStoredState, getDefaultState } from "./utils/storage";
-import { computeOverallStats, getWeakTopicsList, getTodaysTasksList } from "./utils/timelineMath";
+import { generateStudyPlan } from "./utils/planGenerator";
+import { getStoredStudyPlan, saveStudyPlanToStorage, resetStoredStudyPlan } from "./utils/storage";
+import { computeOverallStats, getWeakTasksList, getTodaysTasksList } from "./utils/timelineMath";
 import { exportToCSV } from "./utils/csvExport";
 import { syncToGoogleSheets } from "./utils/googleSheetsSync";
-import { checkAndTrigger5pmReminder, checkAndTriggerStreakBrokenAlert, requestNotificationPermission } from "./utils/notifications";
+import { checkAndTrigger5pmReminder, checkAndTriggerStreakBrokenAlert } from "./utils/notifications";
+import { RAW_SYLLABUS } from "./data/syllabusData";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState("WELCOME");
-  const [appState, setAppState] = useState(() => getStoredState());
+  const [studyPlan, setStudyPlan] = useState(() => getStoredStudyPlan());
+  
+  // App routing logic:
+  // If valid studyPlan exists in storage on load -> route straight to SCREEN_3
+  // Otherwise start on SCREEN_1
+  const [currentScreen, setCurrentScreen] = useState(() => {
+    const stored = getStoredStudyPlan();
+    return stored ? "SCREEN_3" : "SCREEN_1";
+  });
+
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [activeTab, setActiveTab] = useState("PREP");
+  const [dailyGoalPace, setDailyGoalPace] = useState(3);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
@@ -70,122 +82,78 @@ export default function App() {
 
   const handleOpenInstallModal = isStandalone ? null : () => setIsInstallModalOpen(true);
 
-  const stats = computeOverallStats(appState.syllabus);
-  const weakTopics = getWeakTopicsList(appState.syllabus);
-  const todaysTasks = getTodaysTasksList(appState.syllabus, appState.customTasks || []);
-  const pendingFocusCount = todaysTasks.filter(t => !t.completed).length;
-
+  // Background reminders
   useEffect(() => {
+    if (!studyPlan) return;
+    const todaysTasks = getTodaysTasksList(studyPlan, studyPlan.customTasks || []);
     checkAndTrigger5pmReminder(todaysTasks);
-    checkAndTriggerStreakBrokenAlert(appState.streakData);
+    checkAndTriggerStreakBrokenAlert(studyPlan.streakData);
     const interval = setInterval(() => {
       checkAndTrigger5pmReminder(todaysTasks);
-      checkAndTriggerStreakBrokenAlert(appState.streakData);
+      checkAndTriggerStreakBrokenAlert(studyPlan.streakData);
     }, 60000);
     return () => clearInterval(interval);
-  }, [todaysTasks, appState.streakData]);
+  }, [studyPlan]);
 
-  useEffect(() => {
-    saveStateToLocalStorage(appState);
+  // Handle plan generation from Screen 1
+  const handleGeneratePlan = (name, targetYear) => {
+    const newPlan = generateStudyPlan(name, targetYear);
+    saveStudyPlanToStorage(newPlan);
+    setStudyPlan(newPlan);
+    setCurrentScreen("SCREEN_2"); // Route to Screen 2 Stats Overview (transitional)
+  };
 
-    if (appState.googleSheetUrl) {
-      const timer = setTimeout(() => {
-        syncToGoogleSheets(appState.googleSheetUrl, appState).catch(err => {
-          console.warn("Background Google Sheets sync error:", err);
-        });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [appState]);
-
-  const handleToggleTask = (subjectId, topicId, taskId) => {
-    setAppState(prevState => {
-      const updatedSyllabus = prevState.syllabus.map(subject => {
-        if (subject.id !== subjectId) return subject;
-
-        const updatedTopics = subject.topics.map(topic => {
-          if (topic.id !== topicId) return topic;
-
-          const updatedTasks = topic.tasks.map(task => {
-            if (task.id !== taskId) return task;
-            return {
-              ...task,
-              completed: !task.completed,
-              completedAt: !task.completed ? new Date().toISOString() : null
-            };
-          });
-
-          return { ...topic, tasks: updatedTasks };
-        });
-
-        return { ...subject, topics: updatedTopics };
+  // Toggle task completion
+  const handleToggleTask = (taskId) => {
+    if (!studyPlan) return;
+    setStudyPlan(prevPlan => {
+      const updatedTasks = prevPlan.tasks.map(t => {
+        if (t.id !== taskId) return t;
+        const nowCompleted = !t.completed;
+        return {
+          ...t,
+          completed: nowCompleted,
+          completedAt: nowCompleted ? new Date().toISOString() : null,
+          status: nowCompleted ? "completed" : "pending"
+        };
       });
 
-      return { ...prevState, syllabus: updatedSyllabus };
+      const updatedPlan = {
+        ...prevPlan,
+        tasks: updatedTasks
+      };
+
+      saveStudyPlanToStorage(updatedPlan);
+      return updatedPlan;
     });
   };
 
-  const handleToggleMasterTask = (subjectId, masterTaskId) => {
-    setAppState(prevState => {
-      const updatedSyllabus = prevState.syllabus.map(subject => {
-        if (subject.id !== subjectId) return subject;
-
-        const updatedMasterTasks = subject.masterTasks.map(mt => {
-          if (mt.id !== masterTaskId) return mt;
-          return {
-            ...mt,
-            completed: !mt.completed,
-            completedAt: !mt.completed ? new Date().toISOString() : null
-          };
-        });
-
-        return { ...subject, masterTasks: updatedMasterTasks };
+  // Toggle task revision status
+  const handleToggleTaskRevisionStatus = (taskId) => {
+    if (!studyPlan) return;
+    setStudyPlan(prevPlan => {
+      const updatedTasks = prevPlan.tasks.map(t => {
+        if (t.id !== taskId) return t;
+        const newStatus = t.status === "needs-revision" ? (t.completed ? "completed" : "pending") : "needs-revision";
+        return {
+          ...t,
+          status: newStatus
+        };
       });
 
-      return { ...prevState, syllabus: updatedSyllabus };
+      const updatedPlan = {
+        ...prevPlan,
+        tasks: updatedTasks
+      };
+
+      saveStudyPlanToStorage(updatedPlan);
+      return updatedPlan;
     });
   };
 
-  const handleUpdateTopicMetric = (subjectId, topicId, metricKey, value) => {
-    setAppState(prevState => {
-      const updatedSyllabus = prevState.syllabus.map(subject => {
-        if (subject.id !== subjectId) return subject;
-
-        const updatedTopics = subject.topics.map(topic => {
-          if (topic.id !== topicId) return topic;
-
-          if (metricKey === "accuracy") {
-            return { ...topic, accuracy: value };
-          }
-          if (metricKey === "minHours") {
-            return { ...topic, minHours: Math.max(1, value) };
-          }
-
-          const updatedTasks = topic.tasks.map((task, idx) => {
-            if (idx === 0) {
-              return { ...task, [metricKey]: value };
-            }
-            return task;
-          });
-
-          return { ...topic, tasks: updatedTasks };
-        });
-
-        return { ...subject, topics: updatedTopics };
-      });
-
-      return { ...prevState, syllabus: updatedSyllabus };
-    });
-  };
-
-  const handleChangePace = (newPace) => {
-    setAppState(prev => ({
-      ...prev,
-      dailyGoalPace: newPace
-    }));
-  };
-
+  // Add custom focus task
   const handleAddCustomTask = (label) => {
+    if (!studyPlan) return;
     const newTask = {
       id: `custom_${Date.now()}`,
       label,
@@ -193,54 +161,79 @@ export default function App() {
       completedAt: null
     };
 
-    setAppState(prev => ({
-      ...prev,
-      customTasks: [...(prev.customTasks || []), newTask]
-    }));
+    setStudyPlan(prevPlan => {
+      const updatedPlan = {
+        ...prevPlan,
+        customTasks: [...(prevPlan.customTasks || []), newTask]
+      };
+      saveStudyPlanToStorage(updatedPlan);
+      return updatedPlan;
+    });
   };
 
+  // Toggle custom focus task
   const handleToggleCustomTask = (taskId) => {
-    setAppState(prev => ({
-      ...prev,
-      customTasks: (prev.customTasks || []).map(ct => {
+    if (!studyPlan) return;
+    setStudyPlan(prevPlan => {
+      const updatedCustom = (prevPlan.customTasks || []).map(ct => {
         if (ct.id !== taskId) return ct;
         return { ...ct, completed: !ct.completed };
-      })
-    }));
+      });
+
+      const updatedPlan = {
+        ...prevPlan,
+        customTasks: updatedCustom
+      };
+      saveStudyPlanToStorage(updatedPlan);
+      return updatedPlan;
+    });
   };
 
   const handleSaveProgress = () => {
-    saveStateToLocalStorage(appState);
+    if (studyPlan) {
+      saveStudyPlanToStorage(studyPlan);
+      if (studyPlan.googleSheetUrl) {
+        syncToGoogleSheets(studyPlan.googleSheetUrl, studyPlan).catch(err => {
+          console.warn("Background Google Sheets sync error:", err);
+        });
+      }
+    }
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2500);
   };
 
   const handleExportCSV = () => {
-    exportToCSV(appState.syllabus, appState.attemptsLog);
+    if (studyPlan) {
+      exportToCSV(studyPlan);
+    }
   };
 
   const handleConfirmReset = () => {
-    const fresh = resetStoredState();
-    setAppState(fresh);
+    resetStoredStudyPlan();
+    setStudyPlan(null);
+    setIsResetModalOpen(false);
+    setCurrentScreen("SCREEN_1");
   };
 
   const handleSaveSheetUrl = (url) => {
-    setAppState(prev => ({
-      ...prev,
-      googleSheetUrl: url
-    }));
+    if (!studyPlan) return;
+    setStudyPlan(prevPlan => {
+      const updated = { ...prevPlan, googleSheetUrl: url };
+      saveStudyPlanToStorage(updated);
+      return updated;
+    });
   };
 
   const handleNotifChoice = (result) => {
     setNotifPermissionState(typeof window !== "undefined" && "Notification" in window ? Notification.permission : result);
   };
 
-  if (currentScreen === "WELCOME") {
+  // SCREEN 1: Setup & Plan Generation
+  if (currentScreen === "SCREEN_1" || !studyPlan) {
     return (
       <div className="transition-opacity duration-300 ease-in-out">
-        <WelcomeScreen
-          stats={stats}
-          onStartPrep={() => setCurrentScreen("DASHBOARD")}
+        <Screen1Setup
+          onGeneratePlan={handleGeneratePlan}
           onOpenInstallModal={handleOpenInstallModal}
         />
         <InstallAppModal
@@ -256,11 +249,29 @@ export default function App() {
     );
   }
 
+  // SCREEN 2: Stats Overview (transitional)
+  if (currentScreen === "SCREEN_2") {
+    return (
+      <div className="transition-opacity duration-300 ease-in-out">
+        <Screen2Stats
+          studyPlan={studyPlan}
+          onGoToDashboard={() => setCurrentScreen("SCREEN_3")}
+        />
+      </div>
+    );
+  }
+
+  // SCREEN 3: Main Dashboard
+  const weakTasks = getWeakTasksList(studyPlan);
+  const todaysTasks = getTodaysTasksList(studyPlan, studyPlan.customTasks || []);
+  const pendingFocusCount = todaysTasks.filter(t => !t.completed).length;
+
   return (
     <div className="min-h-screen bg-[#faf6f0] text-brown-950 font-sans selection:bg-brown-700 selection:text-white transition-opacity duration-300 ease-in-out">
       
       <DashboardTopBar
-        onBackToWelcome={() => setCurrentScreen("WELCOME")}
+        studyPlan={studyPlan}
+        onBackToStats={() => setCurrentScreen("SCREEN_2")}
         onOpenInstallModal={handleOpenInstallModal}
         onOpenNotifSettings={() => setIsNotifPromptOpen(true)}
       />
@@ -269,7 +280,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         pendingFocusCount={pendingFocusCount}
-        weakTopicsCount={weakTopics.length}
+        weakTopicsCount={weakTasks.length}
       />
 
       {(activeTab === "PREP" || activeTab === "FULL" || activeTab === "SUBJECTS") && (
@@ -286,10 +297,8 @@ export default function App() {
         
         {(activeTab === "PREP" || activeTab === "FULL") && (
           <TodaysTasksPanel
-            syllabus={appState.syllabus}
-            customTasks={appState.customTasks || []}
+            studyPlan={studyPlan}
             onToggleTask={handleToggleTask}
-            onToggleMasterTask={handleToggleMasterTask}
             onAddCustomTask={handleAddCustomTask}
             onToggleCustomTask={handleToggleCustomTask}
           />
@@ -298,49 +307,53 @@ export default function App() {
         {(activeTab === "SUBJECTS" || activeTab === "FULL") && (
           <>
             <SubjectFilterRow
-              syllabus={appState.syllabus}
+              syllabus={RAW_SYLLABUS}
               activeFilter={activeFilter}
               setActiveFilter={setActiveFilter}
             />
 
             <SubjectList
-              syllabus={appState.syllabus}
+              studyPlan={studyPlan}
               activeFilter={activeFilter}
               onToggleTask={handleToggleTask}
-              onUpdateTopicMetric={handleUpdateTopicMetric}
-              onToggleMasterTask={handleToggleMasterTask}
+              onToggleTaskRevisionStatus={handleToggleTaskRevisionStatus}
             />
           </>
         )}
 
         {(activeTab === "TIMELINE" || activeTab === "FULL") && (
           <TimelineCalculator
-            syllabus={appState.syllabus}
-            dailyGoalPace={appState.dailyGoalPace}
-            onChangePace={handleChangePace}
+            studyPlan={studyPlan}
+            dailyGoalPace={dailyGoalPace}
+            onChangePace={(pace) => setDailyGoalPace(pace)}
           />
         )}
 
         {(activeTab === "ANALYTICS" || activeTab === "FULL") && (
           <WeakTopicAnalytics
-            syllabus={appState.syllabus}
-            streakData={appState.streakData}
+            studyPlan={studyPlan}
+            onToggleTask={handleToggleTask}
+            onToggleTaskRevisionStatus={handleToggleTaskRevisionStatus}
           />
         )}
 
       </main>
 
       <footer className="border-t border-brown-200 bg-white py-6 text-center text-xs text-brown-700">
-        <p className="font-extrabold text-brown-950">GATE Command Center 2028 • CS + DA Dual Stream • Target Exam: February 2028</p>
-        <p className="mt-1 font-medium">All data auto-saved to browser local storage and Google Sheets integration.</p>
+        <p className="font-extrabold text-brown-950">
+          GATE Command Center • Target Exam: February {studyPlan.targetYear} ({studyPlan.name})
+        </p>
+        <p className="mt-1 font-medium">
+          CS + DA Dual Stream • All data auto-saved to browser local storage.
+        </p>
       </footer>
 
       <GoogleSheetsModal
         isOpen={isSheetsModalOpen}
         onClose={() => setIsSheetsModalOpen(false)}
-        googleSheetUrl={appState.googleSheetUrl}
+        googleSheetUrl={studyPlan.googleSheetUrl || ""}
         onSaveSheetUrl={handleSaveSheetUrl}
-        fullState={appState}
+        fullState={studyPlan}
       />
 
       <ResetModal

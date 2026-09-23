@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, CheckSquare, Square, Calendar, BookOpen, Clock, HelpCircle, AlertTriangle, FileText, CheckCircle, Timer, Target, Zap } from "lucide-react";
-import { calculateTopicSchedule } from "../utils/timelineMath";
+import { ChevronDown, ChevronUp, CheckSquare, Square, Calendar, BookOpen, Clock, HelpCircle, CheckCircle, RotateCcw, AlertCircle } from "lucide-react";
+import { RAW_SYLLABUS } from "../data/syllabusData";
 
 export const SubjectList = ({
-  syllabus,
+  studyPlan,
   activeFilter,
   onToggleTask,
-  onUpdateTopicMetric,
-  onToggleMasterTask
+  onToggleTaskRevisionStatus,
+  onUpdateTaskMetrics
 }) => {
   const [expandedSubjects, setExpandedSubjects] = useState(() => {
-    return { [syllabus[0]?.id]: true };
+    return { [RAW_SYLLABUS[0]?.id]: true };
   });
 
   const toggleExpand = (subId) => {
@@ -20,12 +20,15 @@ export const SubjectList = ({
     }));
   };
 
-  const filteredSyllabus = syllabus.filter(subject => {
+  const filteredSubjects = RAW_SYLLABUS.filter(subject => {
     if (activeFilter === "ALL") return true;
     if (activeFilter === "CS_ONLY") return subject.stream === "CS";
     if (activeFilter === "DA_ONLY") return subject.stream === "DA";
     return subject.id === activeFilter;
   });
+
+  const tasks = studyPlan?.tasks || [];
+  const deadlines = studyPlan?.deadlines || [];
 
   return (
     <div className="py-6 space-y-4">
@@ -36,36 +39,31 @@ export const SubjectList = ({
             <span>Syllabus Breakdown & Subject Modules</span>
           </h2>
           <span className="text-xs text-brown-700 font-medium">
-            Showing {filteredSyllabus.length} of {syllabus.length} subjects
+            Showing {filteredSubjects.length} of {RAW_SYLLABUS.length} subjects
           </span>
         </div>
 
-        {filteredSyllabus.length === 0 ? (
+        {filteredSubjects.length === 0 ? (
           <div className="p-8 text-center bg-white border border-brown-200 rounded-2xl text-brown-700 shadow-sm">
             No subjects matched the selected filter.
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredSyllabus.map((subject, index) => {
+            {filteredSubjects.map((subject) => {
               const isExpanded = !!expandedSubjects[subject.id];
               const isCS = subject.stream === "CS";
 
-              let subTotalTasks = 0;
-              let subCompletedTasks = 0;
-
-              subject.topics.forEach(topic => {
-                const tasks = topic.tasks || [];
-                subTotalTasks += tasks.length;
-                subCompletedTasks += tasks.filter(t => t.completed).length;
-              });
-
-              (subject.masterTasks || []).forEach(mt => {
-                subTotalTasks++;
-                if (mt.completed) subCompletedTasks++;
-              });
+              const subjectTasks = tasks.filter(t => t.subjectId === subject.id);
+              const subTotalTasks = subjectTasks.length;
+              const subCompletedTasks = subjectTasks.filter(t => t.completed).length;
 
               const subPercent = subTotalTasks > 0 ? Math.round((subCompletedTasks / subTotalTasks) * 100) : 0;
               const isSubjectFinished = subPercent === 100;
+
+              const deadlineObj = deadlines.find(d => d.subjectId === subject.id);
+              const formattedDeadline = deadlineObj?.deadlineDate
+                ? new Date(deadlineObj.deadlineDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                : "TBD";
 
               return (
                 <div
@@ -83,7 +81,7 @@ export const SubjectList = ({
                     onClick={() => toggleExpand(subject.id)}
                     className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none bg-white hover:bg-brown-50/60 transition-colors"
                   >
-                    {/* Left Info: Name & Target Month */}
+                    {/* Left Info: Name & Target Deadline */}
                     <div className="flex items-start sm:items-center gap-3">
                       <span className={`px-2.5 py-1 rounded-md text-xs font-extrabold shrink-0 ${
                         isCS ? "bg-brown-100 text-brown-900 border border-brown-300" : "bg-espresso-100 text-espresso-950 border border-espresso-300"
@@ -106,7 +104,7 @@ export const SubjectList = ({
                         <div className="flex items-center gap-4 text-xs text-brown-700 font-medium mt-1 flex-wrap">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5 text-brown-800" />
-                            Target: <strong className="text-brown-950">{subject.targetMonth}</strong>
+                            Target Deadline: <strong className="text-brown-950">{formattedDeadline}</strong>
                           </span>
                           <span>•</span>
                           <span>{subject.topics.length} topics</span>
@@ -147,241 +145,117 @@ export const SubjectList = ({
                           <ChevronDown className="w-5 h-5" />
                         )}
                       </button>
-
                     </div>
                   </div>
 
-                  {/* Subject Card Body (Expanded Topics List) */}
+                  {/* Expanded Content: Topics List */}
                   {isExpanded && (
-                    <div className="border-t border-brown-200/80 bg-brown-50/30 p-4 sm:p-6 space-y-4">
-                      
-                      {/* Topics Table Header */}
-                      <div className="hidden lg:grid grid-cols-12 gap-3 text-xs font-bold text-brown-700 uppercase tracking-wider px-3 pb-2 border-b border-brown-200">
-                        <div className="col-span-4">Topic & Status</div>
-                        <div className="col-span-5">Auto-Generated Task Checkboxes</div>
-                        <div className="col-span-3 text-right">Metrics & Accuracy</div>
-                      </div>
+                    <div className="border-t border-brown-200 bg-brown-50/40 p-4 sm:p-6 space-y-4">
+                      {subject.topics.map((topic, topicIdx) => {
+                        const topicTasks = subjectTasks.filter(t => t.topicId === topic.id);
+                        const isTopicDone = topicTasks.length > 0 && topicTasks.every(t => t.completed);
 
-                      {/* Topic Rows */}
-                      <div className="space-y-3">
-                        {subject.topics.map((topic, topicIdx) => {
-                          const topicTasks = topic.tasks || [];
-                          const completedCount = topicTasks.filter(t => t.completed).length;
-                          const isFullyDone = topicTasks.length > 0 && completedCount === topicTasks.length;
-                          const isStarted = completedCount > 0;
-
-                          let statusDotClass = "bg-slate-400";
-                          let statusText = "Not Started";
-                          if (topic.accuracy > 0 && topic.accuracy < 60) {
-                            statusDotClass = "bg-rose-500 animate-pulse";
-                            statusText = "Need Revision";
-                          } else if (isFullyDone) {
-                            statusDotClass = "bg-emerald-600";
-                            statusText = "Done";
-                          } else if (isStarted) {
-                            statusDotClass = "bg-amber-500";
-                            statusText = "In Progress";
-                          }
-
-                          const schedule = calculateTopicSchedule(topic, subject.targetMonth, topicIdx, subject.topics.length, subject.topics);
-
-                          return (
-                            <div
-                              key={topic.id}
-                              className={`p-3.5 rounded-xl border transition-all ${
-                                isFullyDone
-                                  ? "bg-emerald-50/30 border-emerald-200"
-                                  : topic.accuracy > 0 && topic.accuracy < 60
-                                  ? "bg-rose-50/60 border-rose-200"
-                                  : "bg-white border-brown-200/90 shadow-sm hover:border-brown-300"
-                              }`}
-                            >
-                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                                
-                                {/* Topic Title & Minimum Time / Target Schedule */}
-                                <div className="lg:col-span-4 space-y-1.5">
-                                  <div className="flex items-center gap-2">
-                                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusDotClass}`} title={statusText} />
-                                    <span className="text-sm font-bold text-brown-950">
-                                      {topicIdx + 1}. {topic.name}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 text-xs text-brown-700 pl-4 flex-wrap">
-                                    <span className="capitalize text-brown-900 bg-brown-100 px-2 py-0.5 rounded text-[11px] font-bold border border-brown-200 shadow-2xs" title={`Pacing Benchmark: ${schedule.durationRange} (${schedule.allocatedDays} days allocated)`}>
-                                      {topic.size} topic ({schedule.durationRange})
-                                    </span>
-                                    <span>•</span>
-                                    <span className={isFullyDone ? "text-emerald-700 font-bold" : "font-medium"}>
-                                      {completedCount}/{topicTasks.length} tasks completed
-                                    </span>
-                                  </div>
-
-                                  {/* Search-Based Minimum Required Time & Best Exam Completion Schedule */}
-                                  <div className="mt-1.5 pl-4 space-y-1 border-l-2 border-brown-300/80">
-                                    {/* Minimum Required Time Row */}
-                                    <div className="flex items-center gap-1.5 text-xs flex-wrap">
-                                      <span className="bg-amber-100/90 text-amber-950 border border-amber-300/90 px-2 py-0.5 rounded text-[11px] font-extrabold flex items-center gap-1 shadow-2xs" title={`Search Benchmark: Min ${schedule.minHours} hours required for ${topic.size} topic`}>
-                                        <Timer className="w-3.5 h-3.5 text-amber-800 shrink-0" />
-                                        <span>Min Required: {schedule.minHours}h</span>
-                                      </span>
-
-                                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold border flex items-center gap-1 ${
-                                        schedule.isMinHoursMet
-                                          ? "bg-emerald-100 text-emerald-900 border-emerald-300"
-                                          : "bg-brown-100/70 text-brown-800 border-brown-300"
-                                      }`}>
-                                        <span>{schedule.hoursSpent}h logged ({schedule.percentMinHoursDone}%)</span>
-                                        {schedule.isMinHoursMet && <CheckCircle className="w-3 h-3 text-emerald-700 shrink-0" />}
-                                      </span>
-                                    </div>
-
-                                    {/* Best Target Finish Date Before Exam */}
-                                    <div className="flex items-center gap-1.5 text-[11px] text-brown-800 flex-wrap">
-                                      <span className="bg-espresso-100/90 text-brown-950 border border-brown-300/90 px-2 py-0.5 rounded font-extrabold flex items-center gap-1 shadow-2xs">
-                                        <Target className="w-3.5 h-3.5 text-brown-800 shrink-0" />
-                                        <span>Best Target: {schedule.formattedTargetDate}</span>
-                                      </span>
-                                      <span className="text-brown-600 font-medium">
-                                        ({schedule.daysUntilExam}d to GATE)
-                                      </span>
-                                      <span className="bg-white text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-0.5">
-                                        <Zap className="w-3 h-3 text-amber-600 shrink-0" />
-                                        <span>{schedule.recommendedDailyPace}</span>
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                </div>
-
-                                {/* Task Checkboxes */}
-                                <div className="lg:col-span-5 flex flex-wrap items-center gap-2">
-                                  {topicTasks.map(task => (
-                                    <button
-                                      key={task.id}
-                                      onClick={() => onToggleTask(subject.id, topic.id, task.id)}
-                                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
-                                        task.completed
-                                          ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
-                                          : "bg-white text-brown-900 border-brown-300/80 hover:bg-brown-100 hover:border-brown-400"
-                                      }`}
-                                    >
-                                      {task.completed ? (
-                                        <CheckSquare className="w-3.5 h-3.5 text-white shrink-0" />
-                                      ) : (
-                                        <Square className="w-3.5 h-3.5 text-brown-500 shrink-0" />
-                                      )}
-                                      <span>{task.label}</span>
-                                    </button>
-                                  ))}
-                                </div>
-
-                                {/* Metrics: Qs, Hours, Min Target Hours, Accuracy Input */}
-                                <div className="lg:col-span-3 flex items-center justify-between lg:justify-end gap-2 border-t lg:border-t-0 border-brown-200 pt-2 lg:pt-0 flex-wrap">
-                                  
-                                  {/* Qs, Logged Hours & Min Req Target Input */}
-                                  <div className="flex items-center gap-1.5 text-xs flex-wrap">
-                                    <div className="flex items-center gap-1 bg-brown-50 px-2 py-1 rounded border border-brown-300" title="Questions Solved">
-                                      <HelpCircle className="w-3 h-3 text-brown-700 shrink-0" />
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        value={topic.tasks?.[0]?.questionsLogged || 0}
-                                        onChange={(e) => onUpdateTopicMetric(subject.id, topic.id, "questionsLogged", Number(e.target.value))}
-                                        className="w-10 bg-transparent text-brown-950 text-center focus:outline-none font-bold"
-                                      />
-                                      <span className="text-[10px] text-brown-600 font-semibold">Qs</span>
-                                    </div>
-
-                                    <div className="flex items-center gap-1 bg-brown-50 px-2 py-1 rounded border border-brown-300" title="Hours Spent Logged">
-                                      <Clock className="w-3 h-3 text-amber-700 shrink-0" />
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        step="0.5"
-                                        value={topic.tasks?.[0]?.hoursSpent || 0}
-                                        onChange={(e) => onUpdateTopicMetric(subject.id, topic.id, "hoursSpent", Number(e.target.value))}
-                                        className="w-9 bg-transparent text-brown-950 text-center focus:outline-none font-bold"
-                                      />
-                                      <span className="text-[10px] text-brown-600 font-semibold">h</span>
-                                    </div>
-
-                                    <div className="flex items-center gap-1 bg-amber-50/90 px-1.5 py-1 rounded border border-amber-300/80" title="Adjust Minimum Target Hours Required">
-                                      <Timer className="w-3 h-3 text-amber-800 shrink-0" />
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        value={topic.minHours || schedule.minHours}
-                                        onChange={(e) => onUpdateTopicMetric(subject.id, topic.id, "minHours", Number(e.target.value))}
-                                        className="w-8 bg-transparent text-amber-950 text-center focus:outline-none font-bold text-xs"
-                                      />
-                                      <span className="text-[10px] text-amber-800 font-extrabold">req</span>
-                                    </div>
-                                  </div>
-
-                                  {/* Accuracy Score */}
-                                  <div className="flex items-center gap-1.5 bg-brown-50 px-2 py-1 rounded border border-brown-300">
-                                    <span className="text-[11px] text-brown-700 font-semibold">Acc:</span>
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      max="100"
-                                      placeholder="0%"
-                                      value={topic.accuracy || ""}
-                                      onChange={(e) => onUpdateTopicMetric(subject.id, topic.id, "accuracy", Number(e.target.value))}
-                                      className={`w-9 bg-transparent text-center focus:outline-none font-extrabold text-xs ${
-                                        topic.accuracy >= 80
-                                          ? "text-emerald-700"
-                                          : topic.accuracy >= 60
-                                          ? "text-amber-700"
-                                          : topic.accuracy > 0
-                                          ? "text-rose-600"
-                                          : "text-brown-500"
-                                      }`}
-                                    />
-                                    <span className="text-xs text-brown-700 font-semibold">%</span>
-                                  </div>
-
-                                </div>
-
+                        return (
+                          <div
+                            key={topic.id}
+                            className={`p-4 rounded-xl border transition-all ${
+                              isTopicDone
+                                ? "bg-emerald-50/30 border-emerald-200"
+                                : "bg-white border-brown-200 shadow-2xs"
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs font-black text-brown-500">
+                                  #{topicIdx + 1}
+                                </span>
+                                <h4 className="text-sm font-extrabold text-brown-950">
+                                  {topic.name}
+                                </h4>
+                                <span className="bg-brown-100 text-brown-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-brown-200 uppercase">
+                                  {topic.size}
+                                </span>
                               </div>
+
+                              {isTopicDone && (
+                                <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                                  <CheckCircle className="w-3.5 h-3.5" /> Topic Completed
+                                </span>
+                              )}
                             </div>
-                          );
-                        })}
-                      </div>
 
-                      {/* Subject Level Master Tasks (Revision, Formula Sheet, Mock Test) */}
-                      <div className="pt-3 border-t border-brown-200">
-                        <div className="flex items-center gap-2 mb-2 text-xs font-extrabold text-brown-900 uppercase tracking-wider">
-                          <FileText className="w-3.5 h-3.5 text-brown-700" />
-                          <span>Subject Milestone Tasks (Unlocked for Completion)</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                          {(subject.masterTasks || []).map(masterTask => (
-                            <button
-                              key={masterTask.id}
-                              onClick={() => onToggleMasterTask(subject.id, masterTask.id)}
-                              className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
-                                masterTask.completed
-                                  ? "bg-brown-800 text-white border-brown-800 shadow-sm"
-                                  : "bg-white text-brown-950 border-brown-300 hover:bg-brown-100"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                {masterTask.completed ? (
-                                  <CheckSquare className="w-4 h-4 text-amber-300 shrink-0" />
-                                ) : (
-                                  <Square className="w-4 h-4 text-brown-400 shrink-0" />
-                                )}
-                                <span>{masterTask.label}</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                            {/* Sub-tasks Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
+                              {topicTasks.map((task) => {
+                                const formattedTaskDate = new Date(task.date).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric"
+                                });
+                                const isNeedsRevision = task.status === "needs-revision";
 
+                                return (
+                                  <div
+                                    key={task.id}
+                                    className={`p-3 rounded-lg border flex flex-col justify-between space-y-2 transition-all ${
+                                      task.completed
+                                        ? "bg-amber-50/40 border-amber-200 text-brown-600"
+                                        : isNeedsRevision
+                                        ? "bg-rose-50/60 border-rose-300 text-rose-950"
+                                        : "bg-brown-50/60 border-brown-200/90 text-brown-950"
+                                    }`}
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <button
+                                        onClick={() => onToggleTask(task.id)}
+                                        className="text-brown-700 hover:text-brown-900 cursor-pointer shrink-0 mt-0.5"
+                                      >
+                                        {task.completed ? (
+                                          <CheckSquare className="w-4 h-4 text-amber-700 fill-amber-100" />
+                                        ) : (
+                                          <Square className="w-4 h-4 text-brown-400 hover:text-brown-700" />
+                                        )}
+                                      </button>
+
+                                      <div className="min-w-0 flex-1">
+                                        <div className={`text-xs font-extrabold ${task.completed ? "line-through text-brown-500" : "text-brown-950"}`}>
+                                          {task.type.toUpperCase()}
+                                        </div>
+                                        <div className="text-[11px] text-brown-600 font-medium truncate mt-0.5">
+                                          {task.label.split(" — ")[0]}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between text-[10px] font-bold text-brown-700 border-t border-brown-200/60 pt-1.5">
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="w-3 h-3 text-brown-600" />
+                                        {formattedTaskDate}
+                                      </span>
+
+                                      <button
+                                        onClick={() => onToggleTaskRevisionStatus(task.id)}
+                                        className={`px-1.5 py-0.5 rounded text-[9px] font-black cursor-pointer transition-colors ${
+                                          isNeedsRevision
+                                            ? "bg-rose-600 text-white"
+                                            : "bg-brown-200/70 text-brown-800 hover:bg-brown-300"
+                                        }`}
+                                        title="Flag for revision"
+                                      >
+                                        {isNeedsRevision ? "Needs Revision" : "Flag Revision"}
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
+
                 </div>
               );
             })}
@@ -391,4 +265,3 @@ export const SubjectList = ({
     </div>
   );
 };
-

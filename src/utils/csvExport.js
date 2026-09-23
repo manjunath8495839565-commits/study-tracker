@@ -1,75 +1,41 @@
-import { calculateTopicSchedule } from "./timelineMath";
+export const exportToCSV = (studyPlan) => {
+  if (!studyPlan || !studyPlan.tasks) return;
 
-export const exportToCSV = (syllabus, attemptsLog = []) => {
   const rows = [];
   
   rows.push([
+    "Sequence",
     "Subject ID",
     "Subject Name",
     "Stream",
-    "Target Month",
+    "Scheduled Date",
     "Topic ID",
     "Topic Name",
-    "Topic Size",
-    "Min Required Hours",
-    "Best Target Completion Date",
-    "Accuracy (%)",
-    "Task ID",
     "Task Type",
-    "Task Description",
+    "Task Label",
     "Status",
+    "Completed At",
     "Questions Logged",
-    "Hours Spent",
-    "Completed At"
+    "Hours Spent"
   ]);
 
-  syllabus.forEach(subject => {
-    subject.topics.forEach((topic, topicIdx) => {
-      const schedule = calculateTopicSchedule(topic, subject.targetMonth, topicIdx, subject.topics.length);
-      topic.tasks.forEach(task => {
-        rows.push([
-          subject.id,
-          `"${subject.name.replace(/"/g, '""')}"`,
-          subject.stream,
-          subject.targetMonth,
-          topic.id,
-          `"${topic.name.replace(/"/g, '""')}"`,
-          topic.size,
-          schedule.minHours,
-          `"${schedule.formattedTargetDate}"`,
-          topic.accuracy || 0,
-          task.id,
-          task.type,
-          `"${task.label.replace(/"/g, '""')}"`,
-          task.completed ? "Done" : "Pending",
-          task.questionsLogged || 0,
-          task.hoursSpent || 0,
-          task.completedAt || ""
-        ]);
-      });
-    });
-
-    subject.masterTasks.forEach(masterTask => {
-      rows.push([
-        subject.id,
-        `"${subject.name.replace(/"/g, '""')}"`,
-        subject.stream,
-        subject.targetMonth,
-        "MASTER_TASK",
-        "Subject Master Milestone",
-        "N/A",
-        "N/A",
-        "N/A",
-        "N/A",
-        masterTask.id,
-        masterTask.type,
-        `"${masterTask.label.replace(/"/g, '""')}"`,
-        masterTask.completed ? "Done" : "Pending",
-        0,
-        0,
-        masterTask.completedAt || ""
-      ]);
-    });
+  studyPlan.tasks.forEach(task => {
+    const dateStr = task.date ? new Date(task.date).toISOString().split("T")[0] : task.dateString;
+    rows.push([
+      task.sequence,
+      task.subjectId,
+      `"${(task.subjectName || "").replace(/"/g, '""')}"`,
+      task.stream,
+      dateStr,
+      task.topicId,
+      `"${(task.topicName || "").replace(/"/g, '""')}"`,
+      task.type,
+      `"${(task.label || "").replace(/"/g, '""')}"`,
+      task.completed ? "Done" : (task.status === "needs-revision" ? "Needs Revision" : "Pending"),
+      task.completedAt || "",
+      task.questionsLogged || 0,
+      task.hoursSpent || 0
+    ]);
   });
 
   const csvContent = rows.map(r => r.join(",")).join("\n");
@@ -77,7 +43,7 @@ export const exportToCSV = (syllabus, attemptsLog = []) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `GATE_Command_Center_2028_Export_${new Date().toISOString().split("T")[0]}.csv`);
+  link.setAttribute("download", `GATE_Command_Center_${studyPlan.targetYear}_Plan_${studyPlan.name}_${new Date().toISOString().split("T")[0]}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

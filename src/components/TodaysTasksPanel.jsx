@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { CheckSquare, Square, Calendar, Plus, Zap, AlertCircle, Clock, CheckCircle2, Sparkles } from "lucide-react";
-import { getTodaysTasksList } from "../utils/timelineMath";
+import { CheckSquare, Square, Calendar, Plus, Zap, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { getTodaysTasksList, getOngoingSubject } from "../utils/timelineMath";
 
 export const TodaysTasksPanel = ({
-  syllabus,
-  customTasks,
+  studyPlan,
   onToggleTask,
-  onToggleMasterTask,
   onAddCustomTask,
   onToggleCustomTask
 }) => {
@@ -18,8 +16,9 @@ export const TodaysTasksPanel = ({
     return () => clearInterval(timer);
   }, []);
 
-  const todaysTasks = getTodaysTasksList(syllabus, customTasks);
-  const completedToday = todaysTasks.filter(t => t.completed).length;
+  const todaysTasks = getTodaysTasksList(studyPlan, studyPlan?.customTasks || []);
+  const ongoing = getOngoingSubject(studyPlan);
+  const completedCount = todaysTasks.filter(t => t.completed).length;
 
   const handleAddCustom = (e) => {
     e.preventDefault();
@@ -27,8 +26,6 @@ export const TodaysTasksPanel = ({
     onAddCustomTask(newCustomTaskLabel.trim());
     setNewCustomTaskLabel("");
   };
-
-  const ongoingTask = todaysTasks.find(t => !t.isCustom);
 
   return (
     <div className="py-6 border-t border-brown-200 bg-white/80">
@@ -44,14 +41,14 @@ export const TodaysTasksPanel = ({
                 <h2 className="text-lg font-extrabold text-brown-950 flex items-center gap-2">
                   Today's Priority Focus Tasks
                 </h2>
-                {ongoingTask && (
+                {ongoing && (
                   <span className="bg-amber-100 text-amber-950 border border-amber-300 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
-                    🎯 Ongoing: {ongoingTask.subjectName} ({ongoingTask.targetMonth})
+                    🎯 Ongoing: {ongoing.subjectName} (Due: {ongoing.targetMonth})
                   </span>
                 )}
               </div>
               <p className="text-xs text-brown-700 font-medium mt-0.5">
-                Sequential daily focus derived strictly from current ongoing subject date • {completedToday} of {todaysTasks.length} completed
+                Sequential daily focus derived strictly from studyPlan engine • {completedCount} of {todaysTasks.length} completed
               </p>
             </div>
           </div>
@@ -92,7 +89,7 @@ export const TodaysTasksPanel = ({
             <div className="space-y-2.5">
               {todaysTasks.map((task) => {
                 const isCustom = task.isCustom;
-                const isMaster = task.isMaster;
+                const formattedTaskDate = task.date ? new Date(task.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
 
                 return (
                   <div
@@ -108,10 +105,8 @@ export const TodaysTasksPanel = ({
                         onClick={() => {
                           if (isCustom) {
                             onToggleCustomTask(task.id);
-                          } else if (isMaster) {
-                            onToggleMasterTask(task.subjectId, task.id);
                           } else {
-                            onToggleTask(task.subjectId, task.topicId, task.id);
+                            onToggleTask(task.id);
                           }
                         }}
                         className="text-brown-700 hover:text-brown-900 cursor-pointer shrink-0 transition-colors"
@@ -126,7 +121,7 @@ export const TodaysTasksPanel = ({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-extrabold text-sm truncate">
-                            {task.label || task.topicName || task.text}
+                            {task.label || task.topicName}
                           </span>
 
                           {!isCustom && (
@@ -135,22 +130,22 @@ export const TodaysTasksPanel = ({
                             </span>
                           )}
 
+                          {!isCustom && formattedTaskDate && (
+                            <span className="bg-white text-brown-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-brown-300">
+                              📅 {formattedTaskDate}
+                            </span>
+                          )}
+
                           {isCustom && (
                             <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-amber-200">
                               Custom Focus
                             </span>
                           )}
-
-                          {isMaster && (
-                            <span className="bg-brown-800 text-amber-100 text-[10px] font-extrabold px-2 py-0.5 rounded-md">
-                              Master Milestone
-                            </span>
-                          )}
                         </div>
 
-                        {!isCustom && !isMaster && task.topicName && (
+                        {!isCustom && task.topicName && (
                           <p className="text-xs text-brown-600 font-medium truncate mt-0.5">
-                            Topic: {task.topicName}
+                            Topic: {task.topicName} ({task.type.toUpperCase()})
                           </p>
                         )}
                       </div>
