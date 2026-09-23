@@ -1,13 +1,20 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, CheckSquare, Square, Calendar, BookOpen, Clock, HelpCircle, CheckCircle, RotateCcw, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckSquare, Square, Calendar, BookOpen, Clock, HelpCircle, CheckCircle, RotateCcw, AlertCircle, Play, Pause } from "lucide-react";
 import { RAW_SYLLABUS } from "../data/syllabusData";
+import { getElapsedMs, formatStopwatchTime } from "../utils/timerStorage";
 
 export const SubjectList = ({
   studyPlan,
   activeFilter,
   onToggleTask,
   onToggleTaskRevisionStatus,
-  onUpdateTaskMetrics
+  onUpdateTaskMetrics,
+  timerState,
+  onStartTimer,
+  onPauseTimer,
+  onResumeTimer,
+  onStopAndSaveTimer,
+  now
 }) => {
   const [expandedSubjects, setExpandedSubjects] = useState(() => {
     return { [RAW_SYLLABUS[0]?.id]: true };
@@ -168,6 +175,71 @@ export const SubjectList = ({
                                 <span className="bg-brown-100 text-brown-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-brown-200 uppercase">
                                   {topic.size}
                                 </span>
+
+                                {(() => {
+                                  const topicTimer = timerState?.timers?.[topic.id];
+                                  const isRunning = topicTimer?.status === "RUNNING";
+                                  const isPaused = topicTimer?.status === "PAUSED";
+                                  const hasTimerStarted = isRunning || isPaused || ((topicTimer?.accumulatedMs || 0) > 0);
+                                  const elapsedMs = getElapsedMs(topicTimer, now || Date.now());
+                                  const formattedTime = formatStopwatchTime(elapsedMs);
+
+                                  if (hasTimerStarted) {
+                                    return (
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        {isRunning ? (
+                                          <button
+                                            onClick={() => onPauseTimer && onPauseTimer(topic.id)}
+                                            className="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-md text-[10px] font-extrabold flex items-center gap-1 transition-colors cursor-pointer"
+                                            title="Pause Timer"
+                                          >
+                                            <Pause className="w-3 h-3 fill-amber-800 text-amber-800" />
+                                            <span>Pause</span>
+                                          </button>
+                                        ) : (
+                                          <button
+                                            onClick={() => onResumeTimer && onResumeTimer(topic.id)}
+                                            className="px-2 py-0.5 bg-brown-100 hover:bg-brown-200 text-brown-900 border border-brown-300 rounded-md text-[10px] font-extrabold flex items-center gap-1 transition-colors cursor-pointer"
+                                            title="Resume Timer"
+                                          >
+                                            <Play className="w-3 h-3 fill-brown-800 text-brown-800" />
+                                            <span>Resume</span>
+                                          </button>
+                                        )}
+
+                                        <span className="px-2 py-0.5 bg-brown-950 text-amber-200 border border-brown-900 rounded-md text-[10px] font-mono font-bold flex items-center gap-1">
+                                          <Clock className="w-3 h-3 text-amber-300 animate-pulse" />
+                                          {formattedTime}
+                                        </span>
+
+                                        <button
+                                          onClick={() => onStopAndSaveTimer && onStopAndSaveTimer(topic.id)}
+                                          className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-800 text-white border border-emerald-800 rounded-md text-[10px] font-extrabold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                                          title="Stop Timer & Commit Hours to Plan / CSV"
+                                        >
+                                          <Square className="w-2.5 h-2.5 fill-white text-white" />
+                                          <span>Stop & Save</span>
+                                        </button>
+                                      </div>
+                                    );
+                                  }
+
+                                  return (
+                                    <button
+                                      onClick={() => onStartTimer && onStartTimer(topic.id)}
+                                      disabled={isTopicDone}
+                                      className={`px-2 py-0.5 rounded-md border text-[10px] font-extrabold flex items-center gap-1 transition-colors ${
+                                        isTopicDone
+                                          ? "bg-brown-100/60 text-brown-400 border-brown-200 cursor-not-allowed"
+                                          : "bg-brown-100 hover:bg-brown-200 text-brown-900 border-brown-300 cursor-pointer"
+                                      }`}
+                                      title={isTopicDone ? "Topic is already completed" : "Start timer for this topic"}
+                                    >
+                                      <Play className="w-3 h-3 fill-brown-800 text-brown-800" />
+                                      <span>Start Timer</span>
+                                    </button>
+                                  );
+                                })()}
                               </div>
 
                               {isTopicDone && (

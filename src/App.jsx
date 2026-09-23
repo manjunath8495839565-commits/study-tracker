@@ -13,6 +13,7 @@ import { GoogleSheetsModal } from "./components/GoogleSheetsModal";
 import { ResetModal } from "./components/ResetModal";
 import { InstallAppModal } from "./components/InstallAppModal";
 import { BrowserPermissionPrompt } from "./components/BrowserPermissionPrompt";
+import { ToastNotification } from "./components/ToastNotification";
 
 import { generateStudyPlan } from "./utils/planGenerator";
 import { getStoredStudyPlan, saveStudyPlanToStorage, resetStoredStudyPlan } from "./utils/storage";
@@ -20,6 +21,7 @@ import { computeOverallStats, getWeakTasksList, getTodaysTasksList } from "./uti
 import { exportToCSV } from "./utils/csvExport";
 import { syncToGoogleSheets } from "./utils/googleSheetsSync";
 import { checkAndTrigger5pmReminder, checkAndTriggerStreakBrokenAlert } from "./utils/notifications";
+import { getStoredTimerState, saveTimerState, getElapsedMs, MAX_CONTINUOUS_RUN_MS } from "./utils/timerStorage";
 import { RAW_SYLLABUS } from "./data/syllabusData";
 
 export default function App() {
@@ -43,6 +45,189 @@ export default function App() {
   const [notifPermissionState, setNotifPermissionState] = useState(() => 
     typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported"
   );
+
+  const [timerState, setTimerState] = useState(() => getStoredTimerState());
+  const [now, setNow] = useState(() => Date.now());
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (timerState?.autoPausedTopicId) {
+      setToast({
+        id: Date.now(),
+        type: "warning",
+        message: "Timer auto-paused after 4 hours — resume if still active"
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime = Date.now();
+      setNow(currentTime);
+
+      setTimerState((prevState) => {
+        if (!prevState?.activeTopicId || !prevState?.timers?.[prevState.activeTopicId]) {
+          return prevState;
+        }
+
+        const activeTimer = prevState.timers[prevState.activeTopicId];
+        if (activeTimer.status === "RUNNING" && activeTimer.startTimestamp) {
+          const runDuration = currentTime - activeTimer.startTimestamp;
+          if (runDuration >= MAX_CONTINUOUS_RUN_MS) {
+            const updated = {
+              ...prevState,
+              activeTopicId: null,
+              timers: {
+                ...prevState.timers,
+                [prevState.activeTopicId]: {
+                  ...activeTimer,
+                  accumulatedMs: (activeTimer.accumulatedMs || 0) + MAX_CONTINUOUS_RUN_MS,
+                  status: "PAUSED",
+                  startTimestamp: null
+                }
+              }
+            };
+            saveTimerState(updated);
+            setToast({
+              id: Date.now(),
+              type: "warning",
+              message: "Timer auto-paused after 4 hours — resume if still active"
+            });
+            return updated;
+          }
+        }
+        return prevState;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleStartTimer = (topicId) => {
+    setTimerState((prev) => {
+      const currentTime = Date.now();
+      const updatedTimers = { ...(prev.timers || {}) };
+
+      if (prev.activeTopicId && prev.activeTopicId !== topicId && updatedTimers[prev.activeTopicId]) {
+        const prevTimer = updatedTimers[prev.activeTopicId];
+        if (prevTimer.status === "RUNNING" && prevTimer.startTimestamp) {
+          updatedTimers[prev.activeTopicId] = {
+            ...prevTimer,
+            accumulatedMs: (prevTimer.accumulatedMs || 0) + (currentTime - prevTimer.startTimestamp),
+            status: "PAUSED",
+            startTimestamp: null
+          };
+        }
+      }
+
+      const existing = updatedTimers[topicId] || {};
+      updatedTimers[topicId] = {
+        ...existing,
+        topicId,
+        status: "RUNNING",
+        startTimestamp: currentTime,
+        accumulatedMs: existing.accumulatedMs || 0
+      };
+
+      const newState = {
+        activeTopicId: topicId,
+        timers: updatedTimers
+      };
+
+      saveTimerState(newState);
+      return newState;
+    });
+  };
+
+  const handlePauseTimer = (topicId) => {
+    setTimerState((prev) => {
+      const currentTime = Date.now();
+      const updatedTimers = { ...(prev.timers || {}) };
+      const currentTimer = updatedTimers[topicId];
+
+      if (currentTimer && currentTimer.status === "RUNNING" && currentTimer.startTimestamp) {
+        updatedTimers[topicId] = {
+          ...currentTimer,
+          accumulatedMs: (currentTimer.accumulatedMs || 0) + (currentTime - currentTimer.startTimestamp),
+          status: "PAUSED",
+          startTimestamp: null
+        };
+      }
+
+      const newState = {
+        activeTopicId: prev.activeTopicId === topicId ? null : prev.activeTopicId,
+        timers: updatedTimers
+      };
+
+      saveTimerState(newState);
+      return newState;
+    });
+  };
+
+  const handleResumeTimer = (topicId) => {
+    handleStartTimer(topicId);
+  };
+
+  const handleStopAndSaveTimer = (topicId) => {
+    const currentTime = Date.now();
+    const topicTimer = timerState?.timers?.[topicId];
+    if (!topicTimer) return;
+
+    const totalElapsedMs = getElapsedMs(topicTimer, currentTime);
+    if (totalElapsedMs <= 0) return;
+
+    let elapsedHours = Math.round((totalElapsedMs / 3600000) * 100) / 100;
+    if (elapsedHours === 0 && totalElapsedMs >= 1000) {
+      elapsedHours = 0.01;
+    }
+
+    if (studyPlan) {
+      setStudyPlan((prevPlan) => {
+        if (!prevPlan || !prevPlan.tasks) return prevPlan;
+
+        const topicTasks = prevPlan.tasks.filter((t) => t.topicId === topicId);
+        if (topicTasks.length === 0) return prevPlan;
+
+        const portionPerHour = elapsedHours / topicTasks.length;
+
+        const updatedTasks = prevPlan.tasks.map((t) => {
+          if (t.topicId !== topicId) return t;
+          const currentSpent = t.hoursSpent || 0;
+          return {
+            ...t,
+            hoursSpent: Math.round((currentSpent + portionPerHour) * 1000) / 1000
+          };
+        });
+
+        const updatedPlan = {
+          ...prevPlan,
+          tasks: updatedTasks
+        };
+
+        saveStudyPlanToStorage(updatedPlan);
+        return updatedPlan;
+      });
+    }
+
+    setTimerState((prev) => {
+      const updatedTimers = { ...(prev.timers || {}) };
+      delete updatedTimers[topicId];
+
+      const newState = {
+        activeTopicId: prev.activeTopicId === topicId ? null : prev.activeTopicId,
+        timers: updatedTimers
+      };
+
+      saveTimerState(newState);
+      return newState;
+    });
+
+    setToast({
+      id: Date.now(),
+      type: "success",
+      message: `Timer stopped & saved! Added +${elapsedHours} hrs to topic.`
+    });
+  };
 
   useEffect(() => {
     const choice = localStorage.getItem("gate_notification_prompt_choice");
@@ -303,6 +488,12 @@ export default function App() {
               activeFilter={activeFilter}
               onToggleTask={handleToggleTask}
               onToggleTaskRevisionStatus={handleToggleTaskRevisionStatus}
+              timerState={timerState}
+              onStartTimer={handleStartTimer}
+              onPauseTimer={handlePauseTimer}
+              onResumeTimer={handleResumeTimer}
+              onStopAndSaveTimer={handleStopAndSaveTimer}
+              now={now}
             />
           </>
         )}
@@ -356,6 +547,11 @@ export default function App() {
         isOpen={isNotifPromptOpen}
         onClose={() => setIsNotifPromptOpen(false)}
         onPermissionChoice={handleNotifChoice}
+      />
+
+      <ToastNotification
+        toast={toast}
+        onClose={() => setToast(null)}
       />
     </div>
   );
