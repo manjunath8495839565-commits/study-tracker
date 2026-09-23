@@ -49,8 +49,6 @@ export const GoogleSheetsModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
-        
-        {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2 text-emerald-400">
             <Cloud className="w-6 h-6" />
@@ -66,7 +64,6 @@ export const GoogleSheetsModal = ({
           </button>
         </div>
 
-        {/* Step-by-Step Setup Guide */}
         <div className="space-y-3 text-xs text-slate-300">
           <p className="text-slate-200 font-semibold text-sm">
             Setup Google Sheets database in 3 easy steps:
@@ -78,7 +75,6 @@ export const GoogleSheetsModal = ({
           </ol>
         </div>
 
-        {/* Script Code Block */}
         <div className="relative bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-48">
           <button
             onClick={handleCopyCode}
@@ -90,7 +86,6 @@ export const GoogleSheetsModal = ({
           <pre>{GOOGLE_APPS_SCRIPT_CODE.trim()}</pre>
         </div>
 
-        {/* Web App URL Input */}
         <div className="space-y-2">
           <label className="block text-xs font-bold text-slate-200">
             Paste Web App URL:
@@ -109,7 +104,6 @@ export const GoogleSheetsModal = ({
           )}
         </div>
 
-        {/* Action Buttons */}
         <div className="flex items-center justify-end gap-3 border-t border-slate-800 pt-4">
           <button
             onClick={onClose}
@@ -126,7 +120,6 @@ export const GoogleSheetsModal = ({
             <span>{isSyncing ? "Syncing..." : "Save & Sync Now"}</span>
           </button>
         </div>
-
       </div>
     </div>
   );

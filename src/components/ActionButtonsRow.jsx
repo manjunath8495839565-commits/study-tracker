@@ -12,10 +12,7 @@ export const ActionButtonsRow = ({
     <div className="bg-white border-b border-brown-200/80 py-3.5 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         
-        {/* Left Side: Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5">
-          
-          {/* Save Progress Button */}
           <button
             onClick={onSaveProgress}
             className={`px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all shadow-sm cursor-pointer flex items-center gap-2 ${
@@ -28,7 +25,6 @@ export const ActionButtonsRow = ({
             <span>{saveSuccess ? "Saved to Browser!" : "Save Progress"}</span>
           </button>
 
-          {/* Export CSV Button */}
           <button
             onClick={onExportCSV}
             className="px-3.5 py-2 rounded-xl text-sm font-semibold bg-brown-50 text-brown-900 hover:bg-brown-100/90 hover:text-brown-950 transition-all cursor-pointer flex items-center gap-2 border border-brown-300/80 shadow-sm"
@@ -37,7 +33,6 @@ export const ActionButtonsRow = ({
             <span>Export CSV</span>
           </button>
 
-          {/* Google Sheets Sync Button */}
           <button
             onClick={onOpenSheetsModal}
             className="px-3.5 py-2 rounded-xl text-sm font-semibold bg-brown-50 text-brown-900 hover:bg-brown-100/90 hover:text-brown-950 transition-all cursor-pointer flex items-center gap-2 border border-brown-300/80 shadow-sm"
@@ -46,7 +41,6 @@ export const ActionButtonsRow = ({
             <span>Google Sheets Sync</span>
           </button>
 
-          {/* Reset All Button */}
           <button
             onClick={onOpenResetModal}
             className="px-3 py-2 rounded-xl text-sm font-semibold bg-rose-50 text-rose-800 hover:bg-rose-100 hover:text-rose-900 transition-all cursor-pointer flex items-center gap-1.5 border border-rose-200"
@@ -57,7 +51,6 @@ export const ActionButtonsRow = ({
 
         </div>
 
-        {/* Right Side: Status Color Legend */}
         <div className="flex items-center gap-4 bg-brown-50/80 border border-brown-200 px-3.5 py-2 rounded-xl text-xs font-semibold text-brown-800 self-start md:self-auto overflow-x-auto shadow-sm">
           <span className="text-brown-600 font-bold uppercase tracking-wider text-[11px]">Legend:</span>
           

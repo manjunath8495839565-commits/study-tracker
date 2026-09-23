@@ -1,8 +1,3 @@
-/**
- * Real Scheduling Engine & Math Utilities derived strictly from studyPlan state.
- * Zero hardcoded dates, months, or years.
- */
-
 export const getLocalYYYYMMDD = (date = new Date()) => {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -34,7 +29,6 @@ export const computeOverallStats = (studyPlan) => {
   let totalStudyHours = 0;
   let totalRevisions = 0;
 
-  // Group by topicId to track topic completion
   const topicMap = {};
   const weakTopicsSet = new Set();
 
@@ -88,17 +82,14 @@ export const getTodaysTasksList = (studyPlan, customTasks = []) => {
 
   const todayStr = getLocalYYYYMMDD(new Date());
 
-  // 1. Filter tasks assigned for today
   let todayTasks = studyPlan.tasks.filter(t => t.dateString === todayStr);
 
-  // 2. If no tasks exact for today, find active upcoming incomplete tasks sorted by sequence
   if (todayTasks.length === 0) {
     todayTasks = studyPlan.tasks
       .filter(t => !t.completed)
       .slice(0, 8);
   }
 
-  // Combine custom tasks with priority studyPlan tasks
   const formattedCustom = (customTasks || []).map(ct => ({ ...ct, isCustom: true }));
   return [...formattedCustom, ...todayTasks];
 };
@@ -108,7 +99,6 @@ export const getOngoingSubject = (studyPlan) => {
 
   const todayStr = getLocalYYYYMMDD(new Date());
   
-  // Find task for today, or first incomplete task
   const currentTask = studyPlan.tasks.find(t => t.dateString === todayStr) || 
                     studyPlan.tasks.find(t => !t.completed) ||
                     studyPlan.tasks[0];
@@ -137,7 +127,7 @@ export const groupTasksByMonth = (studyPlan) => {
   studyPlan.tasks.forEach(t => {
     const d = new Date(t.date);
     const year = d.getFullYear();
-    const month = d.getMonth(); // 0-indexed
+    const month = d.getMonth();
     const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
     const label = d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 
@@ -197,7 +187,6 @@ export const computeTimelineProjection = (studyPlan, dailyGoalPace = 3) => {
   const examDate = new Date(studyPlan.examDate);
   const reservedDays = studyPlan.reservedRevisionDays || 30;
   
-  // Date when syllabus coverage must end before full mock/revision phase
   const revisionStartDate = new Date(examDate.getTime() - reservedDays * 24 * 60 * 60 * 1000);
 
   const msPerDay = 24 * 60 * 60 * 1000;

@@ -13,8 +13,6 @@ export const WeakTopicAnalytics = ({
   return (
     <div className="py-8 border-t border-brown-200 bg-white/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
-        {/* Section Title & Streak Banner */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-brown-950 flex items-center gap-2">
@@ -26,7 +24,6 @@ export const WeakTopicAnalytics = ({
             </p>
           </div>
 
-          {/* Daily Streak Card */}
           <div className="flex items-center gap-3 bg-brown-50 border border-brown-300 px-4 py-2.5 rounded-2xl shadow-xs self-start md:self-auto">
             <div className="p-2 bg-amber-100 rounded-xl border border-amber-300">
               <Flame className="w-6 h-6 text-amber-700 animate-bounce" />
@@ -42,10 +39,7 @@ export const WeakTopicAnalytics = ({
           </div>
         </div>
 
-        {/* Grid: Weak Tasks & Plan Analytics Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Left Column: Flagged Revision Tasks */}
           <div className="lg:col-span-6 bg-white border border-brown-200 rounded-2xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-brown-200 pb-3">
               <div className="flex items-center gap-2">
@@ -114,7 +108,6 @@ export const WeakTopicAnalytics = ({
             )}
           </div>
 
-          {/* Right Column: Key Study Metrics */}
           <div className="lg:col-span-6 bg-white border border-brown-200 rounded-2xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-brown-200 pb-3">
               <h3 className="text-base font-extrabold text-brown-950 flex items-center gap-2">
@@ -146,9 +139,7 @@ export const WeakTopicAnalytics = ({
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
     </div>
   );

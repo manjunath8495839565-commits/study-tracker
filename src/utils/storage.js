@@ -1,9 +1,6 @@
 const STORAGE_KEY = "GATE_COMMAND_CENTER_STUDY_PLAN_V2";
 const LEGACY_STORAGE_KEY = "GATE_2028_STUDY_TRACKER_V1";
 
-/**
- * Hydrates date strings back to JavaScript Date instances.
- */
 const hydratePlanDates = (plan) => {
   if (!plan) return null;
   return {

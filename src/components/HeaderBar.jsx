@@ -15,8 +15,6 @@ export const HeaderBar = ({ stats, onBackToWelcome }) => {
   return (
     <header className="header-bar bg-white text-brown-950 shadow-sm sticky top-0 z-40 border-b border-brown-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        
-        {/* Left Side: Back Button, Title & Subtitle */}
         <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
           {onBackToWelcome && (
             <button
@@ -43,7 +41,6 @@ export const HeaderBar = ({ stats, onBackToWelcome }) => {
             </div>
 
             <div className="flex items-center gap-3 text-xs sm:text-sm text-brown-700 font-medium mt-1 flex-wrap">
-              {/* Real-time live date & time pill */}
               <div className="flex items-center gap-1.5 bg-amber-100/90 border border-amber-300 text-amber-950 px-2.5 py-0.5 rounded-lg text-xs font-extrabold shadow-2xs">
                 <Clock className="w-3.5 h-3.5 text-amber-800 animate-spin" style={{ animationDuration: "6s" }} />
                 <span>{formattedTime}</span>
@@ -56,10 +53,7 @@ export const HeaderBar = ({ stats, onBackToWelcome }) => {
           </div>
         </div>
 
-        {/* Right Side: 5 Live Stat Pills */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
-          
-          {/* Pill 1: Topics Done */}
           <div className="stat-pill bg-brown-50/70 border border-brown-200 rounded-xl px-3 py-2 flex flex-col justify-center transition-all hover:border-brown-400 hover:shadow-sm">
             <div className="flex items-center gap-1.5 text-brown-700 text-xs font-semibold">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -70,7 +64,6 @@ export const HeaderBar = ({ stats, onBackToWelcome }) => {
             </div>
           </div>
 
-          {/* Pill 2: Qs Practiced */}
           <div className="stat-pill bg-brown-50/70 border border-brown-200 rounded-xl px-3 py-2 flex flex-col justify-center transition-all hover:border-brown-400 hover:shadow-sm">
             <div className="flex items-center gap-1.5 text-brown-700 text-xs font-semibold">
               <HelpCircle className="w-3.5 h-3.5 text-brown-600" />
@@ -81,7 +74,6 @@ export const HeaderBar = ({ stats, onBackToWelcome }) => {
             </div>
           </div>
 
-          {/* Pill 3: Study Hours */}
           <div className="stat-pill bg-brown-50/70 border border-brown-200 rounded-xl px-3 py-2 flex flex-col justify-center transition-all hover:border-brown-400 hover:shadow-sm">
             <div className="flex items-center gap-1.5 text-brown-700 text-xs font-semibold">
               <Clock className="w-3.5 h-3.5 text-amber-600" />
@@ -92,7 +84,6 @@ export const HeaderBar = ({ stats, onBackToWelcome }) => {
             </div>
           </div>
 
-          {/* Pill 4: Revisions */}
           <div className="stat-pill bg-brown-50/70 border border-brown-200 rounded-xl px-3 py-2 flex flex-col justify-center transition-all hover:border-brown-400 hover:shadow-sm">
             <div className="flex items-center gap-1.5 text-brown-700 text-xs font-semibold">
               <RotateCcw className="w-3.5 h-3.5 text-brown-700" />
@@ -103,7 +94,6 @@ export const HeaderBar = ({ stats, onBackToWelcome }) => {
             </div>
           </div>
 
-          {/* Pill 5: Overall % */}
           <div className="stat-pill col-span-2 sm:col-span-1 bg-gradient-to-br from-brown-800 to-brown-950 text-white border border-brown-700 rounded-xl px-3 py-2 flex flex-col justify-center transition-all hover:scale-105 shadow-md shadow-brown-900/10">
             <div className="flex items-center gap-1.5 text-brown-200 text-xs font-semibold">
               <Award className="w-3.5 h-3.5 text-amber-300" />

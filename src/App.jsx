@@ -25,9 +25,6 @@ import { RAW_SYLLABUS } from "./data/syllabusData";
 export default function App() {
   const [studyPlan, setStudyPlan] = useState(() => getStoredStudyPlan());
   
-  // App routing logic:
-  // If valid studyPlan exists in storage on load -> route straight to SCREEN_3
-  // Otherwise start on SCREEN_1
   const [currentScreen, setCurrentScreen] = useState(() => {
     const stored = getStoredStudyPlan();
     return stored ? "SCREEN_3" : "SCREEN_1";
@@ -82,7 +79,6 @@ export default function App() {
 
   const handleOpenInstallModal = isStandalone ? null : () => setIsInstallModalOpen(true);
 
-  // Background reminders
   useEffect(() => {
     if (!studyPlan) return;
     const todaysTasks = getTodaysTasksList(studyPlan, studyPlan.customTasks || []);
@@ -95,15 +91,13 @@ export default function App() {
     return () => clearInterval(interval);
   }, [studyPlan]);
 
-  // Handle plan generation from Screen 1
   const handleGeneratePlan = (name, targetYear) => {
     const newPlan = generateStudyPlan(name, targetYear);
     saveStudyPlanToStorage(newPlan);
     setStudyPlan(newPlan);
-    setCurrentScreen("SCREEN_2"); // Route to Screen 2 Stats Overview (transitional)
+    setCurrentScreen("SCREEN_2");
   };
 
-  // Toggle task completion
   const handleToggleTask = (taskId) => {
     if (!studyPlan) return;
     setStudyPlan(prevPlan => {
@@ -128,7 +122,6 @@ export default function App() {
     });
   };
 
-  // Toggle task revision status
   const handleToggleTaskRevisionStatus = (taskId) => {
     if (!studyPlan) return;
     setStudyPlan(prevPlan => {
@@ -151,7 +144,6 @@ export default function App() {
     });
   };
 
-  // Add custom focus task
   const handleAddCustomTask = (label) => {
     if (!studyPlan) return;
     const newTask = {
@@ -171,7 +163,6 @@ export default function App() {
     });
   };
 
-  // Toggle custom focus task
   const handleToggleCustomTask = (taskId) => {
     if (!studyPlan) return;
     setStudyPlan(prevPlan => {
@@ -228,7 +219,6 @@ export default function App() {
     setNotifPermissionState(typeof window !== "undefined" && "Notification" in window ? Notification.permission : result);
   };
 
-  // SCREEN 1: Setup & Plan Generation
   if (currentScreen === "SCREEN_1" || !studyPlan) {
     return (
       <div className="transition-opacity duration-300 ease-in-out">
@@ -249,7 +239,6 @@ export default function App() {
     );
   }
 
-  // SCREEN 2: Stats Overview (transitional)
   if (currentScreen === "SCREEN_2") {
     return (
       <div className="transition-opacity duration-300 ease-in-out">
@@ -261,14 +250,12 @@ export default function App() {
     );
   }
 
-  // SCREEN 3: Main Dashboard
   const weakTasks = getWeakTasksList(studyPlan);
   const todaysTasks = getTodaysTasksList(studyPlan, studyPlan.customTasks || []);
   const pendingFocusCount = todaysTasks.filter(t => !t.completed).length;
 
   return (
     <div className="min-h-screen bg-[#faf6f0] text-brown-950 font-sans selection:bg-brown-700 selection:text-white transition-opacity duration-300 ease-in-out">
-      
       <DashboardTopBar
         studyPlan={studyPlan}
         onBackToStats={() => setCurrentScreen("SCREEN_2")}
@@ -294,7 +281,6 @@ export default function App() {
       )}
 
       <main className="space-y-4">
-        
         {(activeTab === "PREP" || activeTab === "FULL") && (
           <TodaysTasksPanel
             studyPlan={studyPlan}
@@ -336,7 +322,6 @@ export default function App() {
             onToggleTaskRevisionStatus={handleToggleTaskRevisionStatus}
           />
         )}
-
       </main>
 
       <footer className="border-t border-brown-200 bg-white py-6 text-center text-xs text-brown-700">
@@ -372,7 +357,6 @@ export default function App() {
         onClose={() => setIsNotifPromptOpen(false)}
         onPermissionChoice={handleNotifChoice}
       />
-
     </div>
   );
 }

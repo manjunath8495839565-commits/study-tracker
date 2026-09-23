@@ -20,7 +20,7 @@ export const generateTopicTasks = (subjectId, topicId, topicName, size = "medium
       { id: `${topicId}_solving`, type: "solving", label: "Standard Problem Practice Set" },
       { id: `${topicId}_pyqs`, type: "pyq", label: "GATE Past Year Questions (PYQs)" }
     ];
-  } else { // large
+  } else {
     taskConfigs = [
       { id: `${topicId}_reading`, type: "reading", label: "Comprehensive Theory Reading" },
       { id: `${topicId}_concept`, type: "concept", label: "Deep Concept Formulas & Proofs" },
@@ -43,7 +43,6 @@ export const generateTopicTasks = (subjectId, topicId, topicName, size = "medium
 };
 
 export const RAW_SYLLABUS = [
-  // ------------------- GATE CS SUBJECTS (1 to 12) -------------------
   {
     id: "cs-1",
     name: "Engineering Mathematics — Discrete Math",
@@ -234,7 +233,6 @@ export const RAW_SYLLABUS = [
     ]
   },
 
-  // ------------------- GATE DA SUBJECTS (13 to 20) -------------------
   {
     id: "da-13",
     name: "Probability & Statistics (DA Depth)",
@@ -340,20 +338,18 @@ export const RAW_SYLLABUS = [
   }
 ];
 
-// Helper to get minimum search-based time requirement (in hours) based on topic size
 export const getTopicMinHours = (size = "medium") => {
   if (size === "small") return 4;
   if (size === "large") return 20;
-  return 10; // medium
+  return 10;
 };
 
-// Helper to generate full initial syllabus structure with master tasks
 export const buildInitialSyllabusState = () => {
   return RAW_SYLLABUS.map(sub => {
     const formattedTopics = sub.topics.map(t => ({
       ...t,
       subjectId: sub.id,
-      accuracy: 0, // 0 to 100
+      accuracy: 0,
       notes: "",
       minHours: getTopicMinHours(t.size),
       tasks: generateTopicTasks(sub.id, t.id, t.name, t.size)

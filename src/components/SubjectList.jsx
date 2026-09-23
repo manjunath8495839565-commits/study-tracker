@@ -76,12 +76,10 @@ export const SubjectList = ({
                       : "border-brown-200/90 hover:border-brown-300"
                   }`}
                 >
-                  {/* Subject Card Header Bar */}
                   <div
                     onClick={() => toggleExpand(subject.id)}
                     className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none bg-white hover:bg-brown-50/60 transition-colors"
                   >
-                    {/* Left Info: Name & Target Deadline */}
                     <div className="flex items-start sm:items-center gap-3">
                       <span className={`px-2.5 py-1 rounded-md text-xs font-extrabold shrink-0 ${
                         isCS ? "bg-brown-100 text-brown-900 border border-brown-300" : "bg-espresso-100 text-espresso-950 border border-espresso-300"
@@ -114,10 +112,7 @@ export const SubjectList = ({
                       </div>
                     </div>
 
-                    {/* Right Info: Progress Bar & Toggle Icon */}
                     <div className="flex items-center gap-4 self-end sm:self-auto w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-brown-200 pt-3 sm:pt-0">
-                      
-                      {/* Mini Progress Bar */}
                       <div className="w-36 sm:w-48 space-y-1">
                         <div className="flex justify-between text-xs font-bold">
                           <span className="text-brown-700">Progress</span>
@@ -137,7 +132,6 @@ export const SubjectList = ({
                         </div>
                       </div>
 
-                      {/* Dropdown Toggle Icon */}
                       <button className="p-1.5 rounded-lg text-brown-700 hover:text-brown-950 hover:bg-brown-100 transition-colors">
                         {isExpanded ? (
                           <ChevronUp className="w-5 h-5 text-brown-800" />
@@ -148,7 +142,6 @@ export const SubjectList = ({
                     </div>
                   </div>
 
-                  {/* Expanded Content: Topics List */}
                   {isExpanded && (
                     <div className="border-t border-brown-200 bg-brown-50/40 p-4 sm:p-6 space-y-4">
                       {subject.topics.map((topic, topicIdx) => {
@@ -184,7 +177,6 @@ export const SubjectList = ({
                               )}
                             </div>
 
-                            {/* Sub-tasks Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
                               {topicTasks.map((task) => {
                                 const formattedTaskDate = new Date(task.date).toLocaleDateString("en-US", {

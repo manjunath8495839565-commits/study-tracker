@@ -5,17 +5,12 @@ export const SubjectFilterRow = ({ syllabus, activeFilter, setActiveFilter }) =>
   return (
     <div className="bg-white/95 backdrop-blur border-b border-brown-200 py-3 sticky top-[73px] sm:top-[81px] z-30 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-3">
-        
-        {/* Filter Label Icon */}
         <div className="flex items-center gap-1.5 text-xs font-bold text-brown-700 uppercase tracking-wider shrink-0">
           <Filter className="w-4 h-4 text-brown-800" />
           <span className="hidden sm:inline">Filter:</span>
         </div>
 
-        {/* Scrollable Pill Bar */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 scroll-smooth w-full">
-          
-          {/* Option: All Subjects */}
           <button
             onClick={() => setActiveFilter("ALL")}
             className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
@@ -27,7 +22,6 @@ export const SubjectFilterRow = ({ syllabus, activeFilter, setActiveFilter }) =>
             All Subjects ({syllabus.length})
           </button>
 
-          {/* Stream Quick Filters */}
           <button
             onClick={() => setActiveFilter("CS_ONLY")}
             className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
@@ -52,7 +46,6 @@ export const SubjectFilterRow = ({ syllabus, activeFilter, setActiveFilter }) =>
 
           <div className="h-4 w-px bg-brown-300 mx-1 shrink-0" />
 
-          {/* Individual Subject Pills */}
           {syllabus.map((subject, idx) => {
             const isSelected = activeFilter === subject.id;
             const isCS = subject.stream === "CS";
@@ -72,9 +65,7 @@ export const SubjectFilterRow = ({ syllabus, activeFilter, setActiveFilter }) =>
               </button>
             );
           })}
-
         </div>
-
       </div>
     </div>
   );

@@ -50,8 +50,6 @@ export const InstallAppModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brown-950/70 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white border border-brown-300 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 text-brown-950 relative overflow-hidden">
-        
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 text-brown-500 hover:text-brown-900 bg-brown-100/60 hover:bg-brown-200 rounded-full transition-colors cursor-pointer"
@@ -59,7 +57,6 @@ export const InstallAppModal = ({ isOpen, onClose }) => {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Header Banner */}
         <div className="flex items-center gap-3">
           <div className="p-3 bg-gradient-to-br from-brown-800 to-espresso-950 text-amber-200 rounded-2xl shadow-md">
             <Smartphone className="w-7 h-7" />
@@ -85,8 +82,6 @@ export const InstallAppModal = ({ isOpen, onClose }) => {
           </div>
         ) : (
           <div className="space-y-4">
-            
-            {/* Direct 1-Click Install Button (Android / Chrome) */}
             {deferredPrompt && (
               <button
                 onClick={handleInstallClick}
@@ -97,7 +92,6 @@ export const InstallAppModal = ({ isOpen, onClose }) => {
               </button>
             )}
 
-            {/* Step-by-Step Mobile Instructions */}
             <div className="bg-brown-50/80 border border-brown-200 rounded-2xl p-4 space-y-3">
               <h4 className="font-extrabold text-sm text-brown-900 flex items-center gap-2">
                 <span>📱 How to install on your Mobile Device:</span>
@@ -142,7 +136,6 @@ export const InstallAppModal = ({ isOpen, onClose }) => {
               )}
             </div>
 
-            {/* Live Web Link Box for Mobile Sharing */}
             <div className="bg-white border border-brown-300 rounded-xl p-3 flex items-center justify-between text-xs gap-2 shadow-2xs">
               <div className="truncate font-mono text-brown-700">
                 https://manjunath8495839565-commits.github.io/study-tracker/

@@ -9,7 +9,6 @@ export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGener
   const isValidYear = !!targetYear;
   const isFormValid = isValidName && isValidYear;
 
-  // Calculate timeline preview if year selected
   let totalDays = 0;
   let isCompressed = false;
   if (targetYear) {
@@ -28,14 +27,10 @@ export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGener
 
   return (
     <div className="min-h-screen bg-[#faf6f0] text-brown-950 flex flex-col justify-between p-4 sm:p-6 lg:p-12 relative overflow-hidden font-sans select-none">
-      
-      {/* Background Ambient Accents */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-brown-200/30 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-2xl mx-auto w-full space-y-8 my-auto relative z-10">
-        
-        {/* BRANDING HEADER */}
         <div className="text-center space-y-3">
           <div className="flex justify-center items-center gap-3">
             <div className="inline-flex p-4 bg-brown-100 border border-brown-300 rounded-3xl shadow-sm">
@@ -57,11 +52,8 @@ export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGener
           </p>
         </div>
 
-        {/* SETUP FORM CARD */}
         <div className="bg-white border border-brown-200/90 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* INPUT 1: NAME */}
             <div className="space-y-2">
               <label htmlFor="user-name-input" className="block text-xs font-extrabold text-brown-900 uppercase tracking-wider flex items-center gap-1.5">
                 <User className="w-4 h-4 text-brown-700" />
@@ -79,7 +71,6 @@ export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGener
               />
             </div>
 
-            {/* INPUT 2: TARGET YEAR SELECTOR */}
             <div className="space-y-2">
               <label className="block text-xs font-extrabold text-brown-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-brown-700" />
@@ -110,7 +101,6 @@ export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGener
               </div>
             </div>
 
-            {/* EDGE CASE TIMELINE WARNING OR PREVIEW */}
             {targetYear && (
               <div className={`p-4 rounded-2xl border transition-all ${
                 isCompressed
@@ -146,7 +136,6 @@ export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGener
               </div>
             )}
 
-            {/* CTA BUTTON */}
             <div className="pt-2">
               <button
                 type="submit"
@@ -162,15 +151,12 @@ export const Screen1Setup = ({ initialName = "", initialTargetYear = "", onGener
                 <ArrowRight className={`w-5 h-5 ${isFormValid ? "text-amber-300" : "text-brown-400"}`} />
               </button>
             </div>
-
           </form>
         </div>
 
-        {/* FOOTER */}
         <div className="text-center text-xs text-brown-700 font-semibold">
           GATE Command Center • Dual Stream Exam Optimizer
         </div>
-
       </div>
     </div>
   );

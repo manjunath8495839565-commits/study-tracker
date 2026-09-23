@@ -21,8 +21,6 @@ export const TimelineCalculator = ({
   return (
     <div className="py-6 border-t border-brown-200 bg-white/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
-        {/* Section Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calculator className="w-5 h-5 text-brown-800" />
@@ -35,10 +33,7 @@ export const TimelineCalculator = ({
           </span>
         </div>
 
-        {/* Projection Dashboard Cards */}
         <div className="bg-white border border-brown-200 rounded-2xl p-5 sm:p-6 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          
-          {/* Left Column: Input Box */}
           <div className="lg:col-span-4 bg-brown-50/80 border border-brown-200 p-5 rounded-xl space-y-3">
             <label className="block text-xs font-extrabold text-brown-900 uppercase tracking-wider">
               Realistic Daily Capacity
@@ -63,10 +58,7 @@ export const TimelineCalculator = ({
             </div>
           </div>
 
-          {/* Right Column: Projection Indicators */}
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            
-            {/* Box 1: Projected Completion Date */}
             <div className="bg-brown-50/60 border border-brown-200 p-4 rounded-xl space-y-1">
               <div className="flex items-center gap-1.5 text-xs text-brown-700 font-semibold">
                 <Calendar className="w-3.5 h-3.5 text-brown-800" />
@@ -80,7 +72,6 @@ export const TimelineCalculator = ({
               </p>
             </div>
 
-            {/* Box 2: Ahead / Behind Status */}
             <div className={`p-4 rounded-xl border space-y-1 ${
               projection.isAhead
                 ? "bg-emerald-50 border-emerald-300"
@@ -108,7 +99,6 @@ export const TimelineCalculator = ({
               </p>
             </div>
 
-            {/* Box 3: Required Pace */}
             <div className="bg-brown-50/60 border border-brown-200 p-4 rounded-xl space-y-1">
               <div className="flex items-center gap-1.5 text-xs text-brown-700 font-semibold">
                 <TrendingUp className="w-3.5 h-3.5 text-amber-700" />
@@ -121,12 +111,9 @@ export const TimelineCalculator = ({
                 Days left until revision phase: <strong className="text-brown-950">{projection.daysRemainingUntilTarget} days</strong>
               </p>
             </div>
-
           </div>
-
         </div>
 
-        {/* MONTHLY BREAKDOWN GRID */}
         <div className="bg-white border border-brown-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-brown-200 pb-3">
             <h3 className="text-base font-extrabold text-brown-950 flex items-center gap-2">
@@ -166,7 +153,6 @@ export const TimelineCalculator = ({
             ))}
           </div>
         </div>
-
       </div>
     </div>
   );
